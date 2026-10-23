@@ -1,14 +1,25 @@
 Package: zurngtest
-Title: What the Package Does (One Line, Title Case)
+Title: Test Random Number Generators with 'PractRand'
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R:
+    person("Pedro", "Baltazar", , "pedrobtz@gmail.com", role = c("aut", "cre", "cph"))
+Description: Runs the 'PractRand' statistical test suite for random number
+    generators by Chris Doty-Humphrey from R. Bits from a generator are
+    tested at doubling lengths, and the result reports the length at which
+    the generator first fails. Bits can come from R's own generators, from
+    an R function, from raw bytes or a connection, or from a C function
+    registered by another package, which is the fast path for generator
+    packages.
 License: MIT + file LICENSE
-Encoding: UTF-8
-Roxygen: list(markdown = TRUE)
-RoxygenNote: 8.1.1
-Suggests: 
+URL: https://pedrobtz.github.io/zurngtest/,
+    https://github.com/pedrobtz/zurngtest
+BugReports: https://github.com/pedrobtz/zurngtest/issues
+Depends:
+    R (>= 4.1)
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://pedrobtz.github.io/zurngtest/
+Encoding: UTF-8
+Language: en-GB
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.1.1
