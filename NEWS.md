@@ -1,3 +1,3 @@
-# zupract (development version)
+# zurngtest (development version)
 
 * Initial CRAN submission.

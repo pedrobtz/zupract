@@ -1,4 +1,4 @@
-# RFC 0016: `zupract`, testing random number generators in R with PractRand
+# RFC 0016: `zurngtest`, testing random number generators in R with PractRand
 
 Adopted from [RFC 0016](https://github.com/pedrobtz/packages/blob/main/rfcs/started/0016-zupract-practrand-rng-testing.md) on 2026-10-23. From here on this file is authoritative; the RFC is history.
 
@@ -6,7 +6,7 @@ Adopted from [RFC 0016](https://github.com/pedrobtz/packages/blob/main/rfcs/star
   point for the package's own `.agents/design.md`; each decision in section
   13 stays the maintainer's until the package repository records it.
 - **Date:** 2026-10-09.
-- **Packages:** `zupract` (not yet created; name unchecked); vendors
+- **Packages:** `zurngtest` (the RFC's working name was `zupract`); vendors
   PractRand; `zurand` in `Suggests` as its first test subject.
 - **Source:** PractRand's documentation index at `pracrand.sourceforge.net`
   (`versions.txt`, last listed version 0.94; `Tests_usage.txt`, the library
@@ -18,9 +18,9 @@ Adopted from [RFC 0016](https://github.com/pedrobtz/packages/blob/main/rfcs/star
   it before anything is vendored. Nothing was built; section 11 says what
   the first stage measures.
 
-## 1. What zupract is
+## 1. What zurngtest is
 
-`zupract` runs PractRand, Chris Doty-Humphrey's statistical test suite
+`zurngtest` runs PractRand, Chris Doty-Humphrey's statistical test suite
 for random number generators, from R. PractRand finds flaws in
 generators that DieHarder passes, and it is the de facto standard in the
 current literature on generator design: it tests a stream of bits at
@@ -75,14 +75,14 @@ The one-line statement that governs every decision below:
 
 ## 3. Position in the `zu*` family
 
-| | zupract |
+| | zurngtest |
 | --- | --- |
 | Role | tool |
 | R prefix | `pract_` |
-| Info function | `zupract_info()` |
-| Root condition class | `zupract_error` |
-| Public C prefix | `zupract_` for the registered callable; internal `zpt_` |
-| From C | `R_GetCCallable("zupract", "zupract_test_cfun")` |
+| Info function | `zurngtest_info()` |
+| Root condition class | `zurngtest_error` |
+| Public C prefix | `zurngtest_` for the registered callable; internal `zrt_` |
+| From C | `R_GetCCallable("zurngtest", "zurngtest_test_cfun")` |
 | Hides symbols | yes, from Stage 0 (R3) |
 | Vendored code | PractRand (C++) |
 | `Depends: R` | 4.1 (R2) |
@@ -90,7 +90,7 @@ The one-line statement that governs every decision below:
 
 **Relationships.** `zurand` (counter-based generators) is the first
 consumer: its design wants published PractRand results per stream
-layout, and zupract makes that a test in its own repository rather than
+layout, and zurngtest makes that a test in its own repository rather than
 an export to a command-line tool. Any generator package can do the same
 through the registered C entry point, without a compile-time dependency.
 
@@ -120,7 +120,7 @@ source of bits                         PractRand (vendored C++)
   gigabyte per call and keep a tail of blocks between calls
   (`get_blocks_to_repeat()`), which the driver handles, as PractRand's
   `TestManager` does.
-- The driver is zupract's own (a port of `tools/TestManager.h` and the
+- The driver is zurngtest's own (a port of `tools/TestManager.h` and the
   reporting logic of `tools/RNG_test.cpp`), because `TestManager` is not
   part of PractRand's library and needs its command-line context.
 - **R sources run on the main thread only.** An R function is called to
@@ -141,10 +141,10 @@ pract_fun(f, bits = 32)        # f(n) returns n 32-bit words (integer or raw)
 pract_raw(x_or_connection)
 pract_interleave(...)          # combine sources word by word
 
-zupract_info()                 # PractRand version, batteries, limits
+zurngtest_info()                 # PractRand version, batteries, limits
 ```
 
-`pract_test()` returns an object of class `zupract_result`: a data frame
+`pract_test()` returns an object of class `zurngtest_result`: a data frame
 of `bytes`, `test`, `p_value`, `evaluation`, plus the attributes
 `failed_at` (bytes, or `NA`), `source` (a description) and `elapsed`. Its
 `print()` method reproduces `RNG_test`'s compact report.
@@ -164,25 +164,25 @@ the user's stream.
 ### 5.2 The C entry point
 
 ```c
-/* registered with R_RegisterCCallable("zupract", "zupract_test_cfun") */
-typedef void (*zupract_fill_fn)(void *state, uint32_t *out, size_t n);
-SEXP zupract_test_cfun(zupract_fill_fn fill, void *state, SEXP options);
+/* registered with R_RegisterCCallable("zurngtest", "zurngtest_test_cfun") */
+typedef void (*zurngtest_fill_fn)(void *state, uint32_t *out, size_t n);
+SEXP zurngtest_test_cfun(zurngtest_fill_fn fill, void *state, SEXP options);
 ```
 
 A generator package calls this from its own C code (for example in a
-test helper), passing a fill function and its state; zupract fills
+test helper), passing a fill function and its state; zurngtest fills
 blocks directly, with no R in the loop. The function returns the same
 result object as `pract_test()`.
 
 ## 6. Results and evaluations
 
 PractRand reports p-values and labels them from "normal" through
-"unusual" and "suspicious" to "FAIL" with a severity count. zupract keeps
+"unusual" and "suspicious" to "FAIL" with a severity count. zurngtest keeps
 PractRand's labels and thresholds unchanged, documents them, and sets
 `failed_at` at the first length with any "FAIL". It adds nothing of its
 own on top: the number users compare across papers is PractRand's.
 
-## 7. The vendored library, as zupract uses it
+## 7. The vendored library, as zurngtest uses it
 
 - PractRand's `src/` and `include/PractRand/` at the last release, with
   `tools/` used only as reference for the driver; the licence into
@@ -197,10 +197,10 @@ own on top: the number users compare across papers is PractRand's.
 
 ## 8. Errors and limits
 
-Every condition inherits `zupract_error`: `zupract_invalid_argument`,
-`zupract_source_error` (an R function returned the wrong type or length;
+Every condition inherits `zurngtest_error`: `zurngtest_invalid_argument`,
+`zurngtest_source_error` (an R function returned the wrong type or length;
 a connection ended early, unless `max_bytes` allows a short test),
-`zupract_internal_error`. `max_bytes` caps a run (default 16 GiB of
+`zurngtest_internal_error`. `max_bytes` caps a run (default 16 GiB of
 bits), and interrupts are checked between battery calls; an interrupt
 returns the results up to the last completed length.
 
@@ -218,7 +218,7 @@ buffer size plus the tests' own state (tens of megabytes).
   Mersenne-Twister failing PractRand's binary-rank tests at a long length;
   a good generator passing to `max_bytes`), each a regression with the
   length recorded.
-- **Equivalence with `RNG_test`**: for fixed byte files, zupract's
+- **Equivalence with `RNG_test`**: for fixed byte files, zurngtest's
   results equal the command-line tool's output, built from the same
   sources in CI.
 - **Sources**: R's generators recover exact integers; `pract_fun()`
@@ -228,8 +228,8 @@ buffer size plus the tests' own state (tens of megabytes).
 ## 11. Build, portability and CRAN
 
 - C++ (the standard PractRand needs, measured in Stage 0) for the vendored
-  library; zupract's own glue in C++ as well, kept small.
-- `src/Makevars`: hidden visibility; exports `R_init_zupract` only; the
+  library; zurngtest's own glue in C++ as well, kept small.
+- `src/Makevars`: hidden visibility; exports `R_init_zurngtest` only; the
   C callable is registered, not exported.
 - Stage 0 measures compile time, warnings under CRAN's gcc and clang
   flags, the compiled-code NOTE, and confirms the licence.
@@ -244,16 +244,16 @@ throughput for the same generator; through `pract_rng()` at least 50%.
 | # | Question | Decision |
 | --- | --- | --- |
 | D1 | Suite | PractRand, vendored |
-| D2 | Driver | zupract's own port of `TestManager` |
+| D2 | Driver | zurngtest's own port of `TestManager` |
 | D3 | Fast path | a registered C callable for generator packages |
 | D4 | R sources | filled on the main thread only |
 | D5 | Verdicts | PractRand's labels and thresholds unchanged |
-| D6 | Info function | `zupract_info()`, the package name (R1) |
+| D6 | Info function | `zurngtest_info()`, the package name (R1) |
+| D7 | Name | `zurngtest`, chosen 2026-10-23 over `zupract` and `zupractrand`; the R prefix stays `pract_`, internal C prefix `zrt_` |
 
 ## 14. Open questions
 
-1. **The name.** `zupract`, `zupractrand`, or `zurngtest`? Recommended:
-   `zupract`.
+1. **The name.** Decided 2026-10-23: `zurngtest` (D7).
 2. **Which upstream.** The sourceforge 0.94 release or a maintained fork?
    Stage 0 compares them.
 3. **TestU01** in the same package or a sibling? Recommended: sibling, if
@@ -271,7 +271,7 @@ throughput for the same generator; through `pract_rng()` at least 50%.
 
 ## 16. Acceptance criteria for v0.1.0
 
-1. `R CMD check --as-cran` clean on every CI leg; only `R_init_zupract`
+1. `R CMD check --as-cran` clean on every CI leg; only `R_init_zurngtest`
    exported.
 2. Results equal `RNG_test`'s for the same input bytes.
 3. Every known-result generator fails (or passes) at its recorded length.
