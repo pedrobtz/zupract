@@ -5,18 +5,18 @@ with code in this repository.
 
 ## What this is
 
-zupract runs PractRand, Chris Doty-Humphrey’s statistical test suite for
-random number generators, from R. It feeds PractRand a generator’s own
-bits at doubling lengths and reports the length at which the generator
-first fails. Its callers are authors of generator packages (`zurand`
-first, through a registered C callable), users checking R’s own
-[`RNGkind()`](https://rdrr.io/r/base/Random.html) generators, and
+zurngtest runs PractRand, Chris Doty-Humphrey’s statistical test suite
+for random number generators, from R. It feeds PractRand a generator’s
+own bits at doubling lengths and reports the length at which the
+generator first fails. Its callers are authors of generator packages
+(`zurand` first, through a registered C callable), users checking R’s
+own [`RNGkind()`](https://rdrr.io/r/base/Random.html) generators, and
 simulation work that combines streams. PractRand is vendored (C++);
 there are no hard runtime dependencies. It never certifies cryptographic
 quality, and it adds no verdicts of its own on top of PractRand’s.
 
 The specification is
-[`.agents/design.md`](https://pedrobtz.github.io/zupract/.agents/design.md),
+[`.agents/design.md`](https://pedrobtz.github.io/zurngtest/.agents/design.md),
 adopted from [RFC
 0016](https://github.com/pedrobtz/packages/blob/main/rfcs/started/0016-zupract-practrand-rng-testing.md).
 It outranks this file: `CLAUDE.md` orients, the design doc decides. Its
@@ -65,8 +65,8 @@ CRAN accepts it, never before: a `.9000` version above an unreleased
 Until the first release the R API may change freely. Sibling packages
 can still depend on this one before CRAN does, through `Remotes:` or
 `LinkingTo:`. `zurand` will call the registered C callable
-`zupract_test_cfun` from its tests. A change to that function’s
-signature, or to the `zupract_fill_fn` type, breaks it even before
+`zurngtest_test_cfun` from its tests. A change to that function’s
+signature, or to the `zurngtest_fill_fn` type, breaks it even before
 0.1.0. A package that others wait on should reach CRAN first.
 
 ## Commands
@@ -86,27 +86,27 @@ air format .                                     # format R sources
 ## Architecture
 
 To be written as stages land; see `.agents/design.md`. The scaffold set
-up a C stub (`src/zupract.c`, via `usethis::use_c()`) with `@useDynLib`
-registration; the design moves the native layer to C++ for the vendored
-PractRand and zupract’s own driver.
+up a C stub (`src/zurngtest.c`, via `usethis::use_c()`) with
+`@useDynLib` registration; the design moves the native layer to C++ for
+the vendored PractRand and zurngtest’s own driver.
 
 ## Invariants that are easy to break
 
 The design fixes these before any code exists:
 
-- **Only `R_init_zupract` is exported** from the shared library, with
-  hidden visibility from Stage 0. `zupract_test_cfun` is registered with
-  `R_RegisterCCallable()`, not exported. Generator packages reach it
-  only through `R_GetCCallable()`.
+- **Only `R_init_zurngtest` is exported** from the shared library, with
+  hidden visibility from Stage 0. `zurngtest_test_cfun` is registered
+  with `R_RegisterCCallable()`, not exported. Generator packages reach
+  it only through `R_GetCCallable()`.
 - **R sources run on the main thread only.** An R function source is
   called between battery calls to fill a buffer, never from a worker.
   Only the C callable source may be filled off the main thread.
 - **PractRand’s labels and thresholds are reported unchanged.** The
-  number users compare across papers is PractRand’s; zupract adds no
+  number users compare across papers is PractRand’s; zurngtest adds no
   evaluation of its own.
 - **Testing R’s generator does not change the user’s stream.** The R RNG
   state is saved and restored around a run.
-- **Every condition inherits `zupract_error`.**
+- **Every condition inherits `zurngtest_error`.**
 
 Add each further one when a stage establishes it.
 
