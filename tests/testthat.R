@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(zupract)
+library(zurngtest)
 
-test_check("zupract")
+test_check("zurngtest")
