@@ -14,7 +14,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 
 | Stage | Title | CI | Issue | Pull request | Done |
 | --- | --- | --- | --- | --- | --- |
-| 0 | [Package identity](#stage-0--package-identity) | quick | [#2](https://github.com/pedrobtz/zurngtest/issues/2) | | |
+| 0 | [Package identity](#stage-0--package-identity) | quick | [#2](https://github.com/pedrobtz/zurngtest/issues/2) | | 2026-10-23 |
 | 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | | |
 | 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | | |
 | 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | | |
