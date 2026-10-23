@@ -1,4 +1,304 @@
-# zupract roadmap
+# zupract: roadmap
 
-The stages to v0.1.0, each with its exit criteria. Each stage is tracked
-as a sub-issue of the repository's v0.1.0 issue.
+Status: draft 2026-10-23. Implements [design.md](design.md).
+Target: v0.1.0, the first CRAN release.
+Tracking: [v0.1.0 (#1)](https://github.com/pedrobtz/zupract/issues/1), with one
+sub-issue per stage;
+[CRAN-submission (#10)](https://github.com/pedrobtz/zupract/issues/10).
+
+The design's own roadmap (§15) has five stages. Here its Stage 0 is split in
+two, so that vendoring PractRand, the riskiest unknown, is a stage of its own,
+and its last stage is split into documentation, `Full CI` and readiness.
+
+## Stages
+
+| Stage | Title | CI | Issue | Pull request | Done |
+| --- | --- | --- | --- | --- | --- |
+| 0 | [Package identity](#stage-0--package-identity) | quick | [#2](https://github.com/pedrobtz/zupract/issues/2) | | |
+| 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zupract/issues/3) | | |
+| 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zupract/issues/4) | | |
+| 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zupract/issues/5) | | |
+| 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zupract/issues/6) | | |
+| 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zupract/issues/7) | | |
+| 6 | [Full CI](#stage-6--full-ci) | full | [#8](https://github.com/pedrobtz/zupract/issues/8) | | |
+| 7 | [v0.1.0 readiness](#stage-7--v010-readiness) | full | [#9](https://github.com/pedrobtz/zupract/issues/9) | | |
+
+## Stage 0 — Package identity
+
+**Issue.** [#2](https://github.com/pedrobtz/zupract/issues/2), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `quick`.
+
+**Goal.** The package has its real name, metadata and CI, and a pull request
+gets a quick-profile result in under five minutes.
+
+**Work.**
+
+- Settle the name (open question 1); `zupract` is free on CRAN as of
+  2026-10-23.
+- `DESCRIPTION`: real Title and Description, `Authors@R` with `cre`, `aut`
+  and `cph`, `Depends: R (>= 4.1)`, `Language: en-GB`,
+  `Version: 0.0.0.9000`.
+- `.Rbuildignore` with every entry the "Working with skills" section of
+  `CLAUDE.md` lists.
+- `R-CMD-check.yaml` keeps calling `r-cmd-check.yml@v1` and adds the Windows
+  R-devel runner row.
+- `coverage.yaml` pinned to a commit of `coverage.yml`, with the tag in a
+  comment, as `CLAUDE.md` requires for a workflow holding a write token.
+- `CLAUDE.md` present (written by `pkg-init`, 2026-10-23).
+- `zupract_info()` stub and the `zupract_error` condition hierarchy
+  (`zupract_invalid_argument`, `zupract_source_error`,
+  `zupract_internal_error`) with tests asserting on class.
+
+**Exit criteria.**
+
+- `R CMD check` passes on the quick r-actions profile, with no notes other
+  than "New submission".
+- Every check on the stage's pull request finishes in under five minutes;
+  any tuning of `quick-step` or `quick-containers` is recorded here.
+- `.Rbuildignore` lists `^\.agents$`, `^\.superpowers$`, `^\.worktrees$`,
+  `^\.claude$`, `^CLAUDE\.md$`, `^AGENTS\.md$`, `^CRAN-SUBMISSION$` and
+  `^cran-comments\.md$`.
+
+**Design.** §3, §8.
+
+## Stage 1 — Vendor PractRand
+
+**Issue.** [#3](https://github.com/pedrobtz/zupract/issues/3), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `full — vendored C++ library and the package's first compiled code:
+sanitizers, valgrind, rchk and the platform legs`.
+
+**Goal.** PractRand's library compiles inside the package on every CI leg,
+with no compiled-code NOTE, and `zupract_info()` reports its version.
+
+**Work.**
+
+- Confirm PractRand's licence; record it in `inst/COPYRIGHTS` and
+  `DESCRIPTION`.
+- Compare the sourceforge 0.94 release with the most active fork (open
+  question 2); vendor one under `src/practrand/`, pinned in
+  `src/practrand/VERSION` with tag, commit and checksums.
+- Replace the scaffold's C stub with C++ glue; measure the C++ standard
+  PractRand needs and set it in `src/Makevars`.
+- Patches in `tools/patches/` removing stdout/stderr writes and `exit()`
+  from library code, listed in `src/vendor/PROVENANCE` (or the equivalent
+  under `src/practrand/`), and a verify script checking upstream plus
+  exactly those patches.
+- Hidden symbol visibility; only `R_init_zupract` exported. A CI step runs
+  `nm` on the built library and fails on any other export or on a banned
+  symbol (`printf`, `puts`, `abort`, `exit`, `stdout`, `stderr`, `rand`).
+- `zupract_info()` returns the PractRand version and the batteries.
+- Record compile time and warnings under CRAN's gcc and clang flags in this
+  section.
+
+**Exit criteria.**
+
+- A full-profile r-actions run is green on the pull request.
+- `nm` on the built library shows `R_init_zupract` as the only exported
+  symbol, and none of the banned symbols, in CI.
+- The vendor-verify script passes in CI.
+- `zupract_info()` reports the vendored version.
+
+**Design.** §7, §11.
+
+## Stage 2 — Driver and core battery
+
+**Issue.** [#4](https://github.com/pedrobtz/zupract/issues/4), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `full — first external pointers and finalizers holding native state,
+and R called back from C++: gctorture at step 20, valgrind, ASan`.
+
+**Goal.** `pract_test()` runs PractRand's core and expanded batteries at
+doubling lengths over raw bytes and R-function sources, and returns a
+`zupract_result`.
+
+**Work.**
+
+- zupract's own driver, a port of `TestManager.h` and `RNG_test.cpp`'s
+  reporting: 1 KiB blocks, at most half a gigabyte per call, the repeated
+  tail of blocks between calls.
+- Block buffers owned by a finalised external pointer; test objects created
+  and destroyed around each run.
+- `pract_raw()` (raw vector or connection) and `pract_fun()` (32-bit words,
+  integer or raw), filled on the main thread only.
+- `pract_test()` with `battery`, `min_bytes`, `max_bytes`,
+  `stop_on_failure`, `folding` and `seed`.
+- `zupract_result`: the data frame, `failed_at`, `source`, `elapsed`, and a
+  `print()` method reproducing `RNG_test`'s compact report.
+- PractRand's labels and thresholds reported unchanged.
+- Interrupts checked between battery calls; an interrupt returns results up
+  to the last completed length.
+- `zupract_source_error` for a wrong type or length from `pract_fun()` and
+  a connection that ends early.
+
+**Exit criteria.**
+
+- A full-profile r-actions run is green on the pull request.
+- Tests cover both batteries on short raw inputs, `pract_fun()` type and
+  length errors by class, an early-ending connection, and `stop_on_failure`.
+- A known-weak source (a constant or a short LCG) reports `failed_at` within
+  the first lengths.
+
+**Design.** §4, §5, §6, §8, §9.
+
+## Stage 3 — R generators, interleaving and the C callable
+
+**Issue.** [#5](https://github.com/pedrobtz/zupract/issues/5), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `quick`.
+
+**Goal.** Every source the design lists exists: R's own generators,
+interleaved sources, and the registered C callable for generator packages.
+
+**Work.**
+
+- `pract_rng()`: exact 32-bit integers where `unif_rand()` is a scaled
+  32-bit word (Mersenne-Twister); the 32 most significant bits of each double
+  otherwise, stated in `source`. Each `RNGkind()` kind checked and its case
+  recorded here.
+- The user's `.Random.seed` saved and restored around a run.
+- `pract_interleave(...)`, word by word.
+- `zupract_test_cfun` and the `zupract_fill_fn` type, registered with
+  `R_RegisterCCallable()`, in a header under `inst/include/` that compiles
+  standalone.
+- A test that calls the callable from C, through `R_GetCCallable()`, with a
+  small fill function.
+
+**Exit criteria.**
+
+- `R CMD check` passes on the quick r-actions profile.
+- Tests show exact integer recovery for Mersenne-Twister, `.Random.seed`
+  unchanged after a run, byte-exact interleaving, and the C callable
+  returning the same result as `pract_test()` on the same words.
+- `R_init_zupract` is still the only exported symbol.
+
+**Design.** §5.1, §5.2, §4 (D3, D4).
+
+## Stage 4 — Known results and RNG_test equivalence
+
+**Issue.** [#6](https://github.com/pedrobtz/zupract/issues/6), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `quick`.
+
+**Goal.** zupract's results are shown to equal PractRand's own tool, and
+generators with published results fail, or pass, where they should.
+
+**Work.**
+
+- A CI workflow that builds `RNG_test` from the vendored sources, runs it on
+  fixed byte files, and compares its output with `pract_test()`'s.
+- Known-result regressions: a weak LCG, `xorshift32`, Mersenne-Twister's
+  binary-rank failure, and a good generator passing to `max_bytes`, each
+  with its recorded length. Long lengths run in CI only (`skip_on_cran()`).
+- The CRAN-run suite kept under 15 s.
+- The throughput targets measured and recorded here: the C callable at 90%
+  or more of `RNG_test`, `pract_rng()` at 50% or more.
+
+**Exit criteria.**
+
+- `R CMD check` passes on the quick r-actions profile.
+- The equivalence workflow is green.
+- Every known-result generator fails, or passes, at its recorded length in
+  CI.
+- The CRAN suite runs in under 15 s on the quick profile's Ubuntu leg.
+
+**Design.** §10, §12; acceptance criteria 2 and 3.
+
+## Stage 5 — Documentation and zurand
+
+**Issue.** [#7](https://github.com/pedrobtz/zupract/issues/7), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `quick`.
+
+**Goal.** A user can learn the package from its site, and `zurand` uses the
+C callable in a test.
+
+**Work.**
+
+- roxygen documentation for every export, with examples at short lengths.
+- PractRand's evaluation labels documented.
+- `README.Rmd` (the `pkg-readme` skill) and a pkgdown reference index.
+- A vignette testing a `zurand` stream through the C callable, with `zurand`
+  in `Suggests` and the vignette guarded on it.
+- A `zurand` pull request that uses `zupract_test_cfun` in a test.
+
+**Exit criteria.**
+
+- `R CMD check` passes on the quick r-actions profile; the pkgdown site
+  builds.
+- The vignette builds with and without `zurand` installed.
+- The `zurand` pull request is merged, or recorded here as blocked with a
+  reason.
+
+**Design.** §3 (relationships); acceptance criterion 4.
+
+## Stage 6 — Full CI
+
+**Issue.** [#8](https://github.com/pedrobtz/zupract/issues/8), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `full`. Always, by policy.
+
+**Goal.** No new features. The full r-actions profile is green on the
+default branch's code.
+
+**Work.**
+
+- Run the full profile (`full-ci` label) and fix everything it finds:
+  gctorture at the sensitive step, valgrind, ASan, every platform leg,
+  `nosuggests`, `nold`, cran-special.
+- Close each failure recorded as a comment on this stage's issue.
+
+**Exit criteria.**
+
+- A full-profile run is green on the pull request and on the merge commit.
+
+**Design.** §11; acceptance criterion 1.
+
+## Stage 7 — v0.1.0 readiness
+
+**Issue.** [#9](https://github.com/pedrobtz/zupract/issues/9), sub-issue of
+[v0.1.0](https://github.com/pedrobtz/zupract/issues/1).
+
+**CI.** `full`. Always, by policy.
+
+**Goal.** Only the submission itself is left.
+
+**Work.**
+
+- `Version: 0.1.0` and the matching `NEWS.md` heading.
+- `cran-comments.md` listing the r-actions CI legs as test environments.
+- The `pkg-critical-review` skill run; blocking and required findings fixed.
+- The `pkg-cran-review` skill run; every finding resolved.
+- `urlchecker::url_check()` and `spelling::spell_check_package()` clean.
+
+**Exit criteria.**
+
+- A full-profile r-actions run is green on the release commit.
+- Both review skills' findings are closed.
+- `urlchecker` and `spelling` report nothing.
+
+**Design.** Acceptance criteria 1–4.
+
+## After 0.1.0
+
+- PractRand's own generators (`sfc64`, `jsf64`, `efiix`) as R generators via
+  `RNGkind("user-supplied")`: "later, when asked" in §2.
+- Multithreaded batteries (`MultithreadedTestManager`), once the
+  single-threaded path is measured in Stage 4.
+- A TestU01 binding: a sibling package if ever (open question 3).
+
+## Open questions
+
+1. **The name** (`zupract`, `zupractrand` or `zurngtest`). Blocks Stage 0.
+   The design recommends `zupract`; the repository already uses it.
+2. **Which upstream**, the sourceforge 0.94 release or a maintained fork.
+   Blocks Stage 1, which decides it.
+3. **TestU01** in this package or a sibling. Blocks nothing before 0.1.0.
