@@ -119,6 +119,13 @@ compiles 22 translation units in about 27 s on a macOS machine.
   package's symbols; `test-symbols.R` requires every other export to be
   `R_init_zurngtest`. Hiding them too would need a linker version script,
   which `Makevars` cannot pass portably.
+  The test was seen to fail on Linux on 2026-10-24 (rocker/r-ver 4.5.1, the
+  library built without `$(CXX_VISIBILITY)`): it lists PractRand's own
+  symbols, so the libstdc++ filter does not hide them.
+- Windows has no `-fvisibility`, and R's Windows link exports every global
+  symbol unless `src/zurngtest-win.def` lists the exports; that file exports
+  `R_init_zurngtest` only, and the export test reads the DLL's export table
+  with `objdump -p`.
 
 **Exit criteria.**
 
