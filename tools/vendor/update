@@ -1,0 +1,13 @@
+#!/bin/sh
+# Replace the vendored tree in src/practrand/ with a fresh derivation from
+# the pin and the patches in src/practrand/PROVENANCE. Run from the package
+# root, then run tools/vendor/verify.
+set -eu
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+tools/vendor/derive "$WORK/tree"
+
+rm -rf src/practrand/include src/practrand/src src/practrand/LICENSE
+cp -R "$WORK/tree/include" "$WORK/tree/src" "$WORK/tree/LICENSE" src/practrand/
+echo "==> src/practrand/ updated; now run tools/vendor/verify"

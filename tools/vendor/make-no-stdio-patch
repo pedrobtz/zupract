@@ -1,0 +1,44 @@
+#!/bin/sh
+# Regenerate tools/patches/0001-no-stdio.patch from the pristine upstream
+# tree. Run from the package root after changing the pin in
+# src/practrand/PROVENANCE, then run tools/vendor/update and
+# tools/vendor/verify. The edits are mechanical, so a new upstream version
+# needs this script rerun, not the patch rebased by hand.
+set -eu
+
+ROOT=$(pwd)
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+tools/vendor/derive "$WORK/a" --pristine
+cp -R "$WORK/a" "$WORK/b"
+cd "$WORK/b"
+
+# Every std::printf goes to a no-op, declared once in config.h.
+grep -rl 'std::printf(' src include |
+  xargs perl -pi -e 's/\bstd::printf\(/PractRand::Internals::no_printf(/g'
+perl -0pi -e 's|\n#endif //__PRACTRAND_CONFIG_H__|\n// Modified for the zurngtest R package: R forbids writing to stdout from\n// compiled code, so library diagnostics print nothing.\nnamespace PractRand {\n\tnamespace Internals {\n\t\tinline int no_printf(const char *, ...) { return 0; }\n\t}\n}\n\n#endif //__PRACTRAND_CONFIG_H__|' \
+  include/PractRand/config.h
+
+# issue_error() throws when no handler is hooked, instead of printing to
+# stderr and calling exit(1).
+perl -0pi -e 's|\t\t\tif \(msg\) std::fprintf\(stderr, "%s\\n", msg\);\n\t\t\tstd::fprintf\(stderr, "an error occurred, aborting\\n"\);\n\t\t\tstd::exit\(1\);\n|\t\t\t// Modified for the zurngtest R package: throw rather than exit.\n\t\t\tthrow std::runtime_error(msg ? msg : "PractRand internal error");\n|' \
+  src/rand.cpp
+perl -pi -e 's|^#include <cstdlib>$|#include <cstdlib>\n#include <stdexcept>|' src/rand.cpp
+
+# The remaining exit() calls end calibration code and two can't-happen
+# branches; they raise the library's error instead.
+perl -pi -e 's/\bstd::exit\(0\);/PractRand::issue_error();/g' \
+  src/tests_core.cpp src/tests_other.cpp
+
+cd "$WORK"
+if diff -ruN a b > patch; then
+  echo "no changes: the edits no longer match upstream" >&2
+  exit 1
+fi
+# diff -ruN labels files a/... and b/...; patch -p1 strips that component.
+# Drop the timestamps diff writes into the headers, so regenerating the
+# patch from the same tree gives the same bytes.
+perl -pi -e 's/^((?:---|\+\+\+) \S+)\t.*$/$1/' "$WORK/patch"
+cp "$WORK/patch" "$ROOT/tools/patches/0001-no-stdio.patch"
+echo "wrote tools/patches/0001-no-stdio.patch"

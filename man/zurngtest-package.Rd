@@ -25,5 +25,10 @@ Authors:
   \item Pedro Baltazar \email{pedrobtz@gmail.com} [copyright holder]
 }
 
+Other contributors:
+\itemize{
+  \item Chris Doty-Humphrey (PractRand library, src/practrand/) [contributor, copyright holder]
+}
+
 }
 \keyword{internal}

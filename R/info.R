@@ -4,15 +4,15 @@
 #' test batteries available.
 #'
 #' @return A list with elements `version` (the package version),
-#'   `practrand` (the vendored 'PractRand' version, `NA` until it is
-#'   vendored) and `batteries` (the names of the test batteries).
+#'   `practrand` (the version of the vendored 'PractRand' library) and
+#'   `batteries` (the names of the test batteries).
 #' @export
 #' @examples
 #' zurngtest_info()
 zurngtest_info <- function() {
   list(
     version = unname(getNamespaceVersion("zurngtest")),
-    practrand = NA_character_,
+    practrand = .Call(zrt_practrand_version),
     batteries = c("core", "expanded")
   )
 }

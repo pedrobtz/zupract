@@ -15,7 +15,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 | Stage | Title | CI | Issue | Pull request | Done |
 | --- | --- | --- | --- | --- | --- |
 | 0 | [Package identity](#stage-0--package-identity) | quick | [#2](https://github.com/pedrobtz/zurngtest/issues/2) | [#12](https://github.com/pedrobtz/zurngtest/pull/12) | 2026-10-23 |
-| 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | | |
+| 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | [#14](https://github.com/pedrobtz/zurngtest/pull/14) | 2026-10-24 |
 | 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | | |
 | 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | | |
 | 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | | |
@@ -93,6 +93,32 @@ with no compiled-code NOTE, and `zurngtest_info()` reports its version.
 - `zurngtest_info()` returns the PractRand version and the batteries.
 - Record compile time and warnings under CRAN's gcc and clang flags in this
   section.
+
+**Measured** (2026-10-24). PractRand 0.96 compiles as C++11, 14 and 17, so
+`CXX_STD` is left at R's default. Under CRAN's `-Wall -pedantic` it gave
+about 150 warnings that R CMD check counts as significant with each of
+GCC 15 and Apple clang 17, plus diagnostic-suppressing pragmas; patch
+`0002-cran-warnings.patch` takes both to none. Installing the package
+compiles 22 translation units in about 27 s on a macOS machine.
+
+**Deviations** (2026-10-24).
+
+- The pin and the patch list live in `src/practrand/PROVENANCE`, read by
+  `tools/vendor/derive`, rather than in a separate `VERSION` file.
+- Upstream's `RNGs/other/` generators are not vendored: some of that code
+  has no stated licence, and the library neither includes nor links it.
+- There is no `vendor-upstream.yml`: it watches GitHub releases, and
+  PractRand is released on SourceForge. `vendor.yml` runs the verifier.
+- Two more patches were needed: 0002 for compiler warnings (above), and
+  0003 for arm64 macOS and the C++20 deprecations R-devel counts as
+  significant, which the first CI run found.
+- The export criterion excludes libstdc++'s `std::` template
+  instantiations. libstdc++ gives namespace `std` default visibility, so
+  instantiations the library uses (`std::vector<double>`, `std::string`)
+  stay exported on Linux under `-fvisibility=hidden`. They are not the
+  package's symbols; `test-symbols.R` requires every other export to be
+  `R_init_zurngtest`. Hiding them too would need a linker version script,
+  which `Makevars` cannot pass portably.
 
 **Exit criteria.**
 
@@ -299,6 +325,6 @@ default branch's code.
 
 1. **The name.** Resolved 2026-10-23: `zurngtest` (design D7). The R prefix
    stays `pract_`.
-2. **Which upstream**, the sourceforge 0.94 release or a maintained fork.
-   Blocks Stage 1, which decides it.
+2. **Which upstream.** Resolved 2026-10-24: PractRand 0.96 from SourceForge,
+   released 2025-12-26 and newer than every fork (design D8).
 3. **TestU01** in this package or a sibling. Blocks nothing before 0.1.0.

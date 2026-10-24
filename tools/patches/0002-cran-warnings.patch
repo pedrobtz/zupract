@@ -1,0 +1,1381 @@
+diff -ruN a/include/PractRand/Tests/DistFreq4.h b/include/PractRand/Tests/DistFreq4.h
+--- a/include/PractRand/Tests/DistFreq4.h
++++ b/include/PractRand/Tests/DistFreq4.h
+@@ -26,7 +26,7 @@
+ 		};
+ 		class TripleFreq : public TestBaseclass {
+ 		public:
+-			TripleFreq(int passes_at_once_, int blocks_per_pass_) : passes_at_once(passes_at_once_), blocks_per_pass(blocks_per_pass_) {}
++			TripleFreq(int passes_at_once_, int blocks_per_pass_) : blocks_per_pass(blocks_per_pass_), passes_at_once(passes_at_once_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+@@ -58,7 +58,7 @@
+ 		};
+ 		class TripleMirrorFreq : public TestBaseclass {
+ 		public:
+-			TripleMirrorFreq(int passes_at_once_, int blocks_per_pass_) : passes_at_once(passes_at_once_), blocks_per_pass(blocks_per_pass_) {}
++			TripleMirrorFreq(int passes_at_once_, int blocks_per_pass_) : blocks_per_pass(blocks_per_pass_), passes_at_once(passes_at_once_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+@@ -85,7 +85,7 @@
+ 		};
+ 		class TripleMirrorFreqN : public TestBaseclass {
+ 		public:
+-			TripleMirrorFreqN(int minimum_level_) : minimum_level(minimum_level_), blocks_per_pass(1 << minimum_level_) {}
++			TripleMirrorFreqN(int minimum_level_) : blocks_per_pass(1 << minimum_level_), minimum_level(minimum_level_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+@@ -120,7 +120,7 @@
+ 		};
+ 		class TripleMirrorCoup : public TestBaseclass {
+ 		public:
+-			TripleMirrorCoup(int passes_at_once_, int blocks_per_pass_) : passes_at_once(passes_at_once_), blocks_per_pass(blocks_per_pass_) {}
++			TripleMirrorCoup(int passes_at_once_, int blocks_per_pass_) : blocks_per_pass(blocks_per_pass_), passes_at_once(passes_at_once_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+@@ -153,7 +153,7 @@
+ 		};
+ 		class QuadFreq : public TestBaseclass {//not yet implemented
+ 		public:
+-			QuadFreq(int passes_at_once_, int blocks_per_pass_) : passes_at_once(passes_at_once_), blocks_per_pass(blocks_per_pass_) {}
++			QuadFreq(int passes_at_once_, int blocks_per_pass_) : blocks_per_pass(blocks_per_pass_), passes_at_once(passes_at_once_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+diff -ruN a/include/PractRand/Tests/NearSeq.h b/include/PractRand/Tests/NearSeq.h
+--- a/include/PractRand/Tests/NearSeq.h
++++ b/include/PractRand/Tests/NearSeq.h
+@@ -149,10 +149,7 @@
+ 
+ 			Sint8 lookup1(Word value) const {
+ 				using namespace PractRand::Internals;
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 				if (BITS_PER_BLOCK < WORD_BITS) value &= Word((1ull << BITS_PER_BLOCK) - 1);
+-#pragma GCC diagnostic pop
+ 				if (BITS_PER_BLOCK <= MAX_LOOKUP_L2) return lookup_table1[value];
+ 				else if (BITS_PER_BLOCK <= 16) return lookup_table1[count_ones16(value)];
+ 				else if (BITS_PER_BLOCK <= 32) return lookup_table1[count_ones32(value)];
+@@ -173,10 +170,7 @@
+ 				else return lookup_table2[count_ones64(value)];
+ 			}
+ 			void analyze_block(Word block_value, long &bucket, int bucket_bit, long &hdist) const {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 				if (BITS_PER_BLOCK < WORD_BITS) block_value &= Word((1ull << BITS_PER_BLOCK) - 1);
+-#pragma GCC diagnostic pop
+ 				bucket |= (_lookup1(block_value) & 1) << bucket_bit;
+ 				hdist += _lookup2(block_value);
+ 			}
+diff -ruN a/include/PractRand/Tests/permutation.h b/include/PractRand/Tests/permutation.h
+--- a/include/PractRand/Tests/permutation.h
++++ b/include/PractRand/Tests/permutation.h
+@@ -3,7 +3,7 @@
+ 
+ 		class LPerm16 : public TestBaseclass {
+ 		public:
+-			LPerm16(int word_bits_, int passes_at_once_ = 0, int blocks_per_pass_ = 1) : word_bits(word_bits_), passes_at_once(passes_at_once_), blocks_per_pass(blocks_per_pass_) {}
++			LPerm16(int word_bits_, int passes_at_once_ = 0, int blocks_per_pass_ = 1) : word_bits(word_bits_), blocks_per_pass(blocks_per_pass_), passes_at_once(passes_at_once_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+@@ -22,7 +22,7 @@
+ 		};
+ 		class LPerm16A : public TestBaseclass {
+ 		public:
+-			LPerm16A(int word_bits_, int passes_at_once_ = 0, int blocks_per_pass_ = 1) : word_bits(word_bits_), passes_at_once(passes_at_once_), blocks_per_pass(blocks_per_pass_) {}
++			LPerm16A(int word_bits_, int passes_at_once_ = 0, int blocks_per_pass_ = 1) : word_bits(word_bits_), blocks_per_pass(blocks_per_pass_), passes_at_once(passes_at_once_) {}
+ 			virtual void init(PractRand::RNGs::vRNG *known_good);
+ 			virtual std::string get_name() const;
+ 			virtual void get_results(std::vector<TestResult> &results);
+diff -ruN a/include/PractRand/config.h b/include/PractRand/config.h
+--- a/include/PractRand/config.h
++++ b/include/PractRand/config.h
+@@ -125,6 +125,11 @@
+ 
+ #define PRACTRAND_NO_SIMD
+ 
++// Modified for the zurngtest R package: the unsigned __int128 convenience
++// wrappers in rng_basics.h and rng_helpers.h are an extension -pedantic warns
++// about, and nothing in the library uses them.
++#define PRACTRAND_NO_INT128
++
+ //#define PRACTRAND_NO_INTRINSICS
+ 
+ //#define PRACTRAND_ALLOW_MISALIGNED_READS
+diff -ruN a/include/PractRand/rng_basics.h b/include/PractRand/rng_basics.h
+--- a/include/PractRand/rng_basics.h
++++ b/include/PractRand/rng_basics.h
+@@ -47,7 +47,7 @@
+ 			std::string print_state();//returns RNG state as a comma-delimited sequence of numbers
+ 			virtual void walk_state(StateWalkingObject *) = 0;
+ 
+-#if defined __SIZEOF_INT128__
++#if defined __SIZEOF_INT128__ && !defined PRACTRAND_NO_INT128
+ 			// if 128 bit integers are supported, then these might be more convenient equivalents to the above
+ 			void seed128(unsigned __int128 seedval) {seed(Uint64(seedval >> 0), Uint64(seedval >> 64));}
+ #endif
+@@ -59,7 +59,7 @@
+ 			virtual Uint32 raw32() = 0;
+ 			virtual Uint64 raw64() = 0;
+ 			//virtual void raw_N(Uint8 *, size_t length) = 0;
+-#if defined __SIZEOF_INT128__
++#if defined __SIZEOF_INT128__ && !defined PRACTRAND_NO_INT128
+ 			// if 128 bit integers are supported, then this might be a convenient wrapper for raw64:
+ #if defined PRACTRAND_TARGET_IS_LITTLE_ENDIAN
+ 			unsigned __int128 raw128() { Uint64 low = raw64(); Uint64 high = raw64(); return (static_cast<unsigned __int128>(high) << 64) | low; }
+@@ -90,7 +90,7 @@
+ 			virtual void get_maximum_seed(Uint64 &seed_low, Uint64 &seed_high) const;//returns the highest seed to produce a seeded state distinct from that of all lower seed values
+ 			//if seed_low and seed_high are both set to zero, that means that the highest distinct seed is unknown (should only happen for non-recommended PRNGs)
+ 			//good quality PRNGs should both set both to 0xFFFFFFFFFFFFFFFFull (meaning that all 2**128 possible seeds produce distinct seeded states)
+-#if defined __SIZEOF_INT128__
++#if defined __SIZEOF_INT128__ && !defined PRACTRAND_NO_INT128
+ 			// if 128 bit integers are supported, then these might be more convenient equivalents to the above
+ 			unsigned __int128 get_maximum_seed128() const { Uint64 seed_low, seed_high; get_maximum_seed(seed_low, seed_high); return (static_cast<unsigned __int128>(seed_high) << 64) | seed_low; }
+ #endif
+@@ -99,7 +99,7 @@
+ 		//exotic methods 1: random access
+ 			virtual void seek_forward(Uint64 how_far_low64, Uint64 how_far_high64=0);
+ 			virtual void seek_backward(Uint64 how_far_low64, Uint64 how_far_high64=0);
+-#if defined __SIZEOF_INT128__
++#if defined __SIZEOF_INT128__ && !defined PRACTRAND_NO_INT128
+ 			void seek_forward128(unsigned __int128 how_far) {Uint64 low = Uint64(how_far); Uint64 high = Uint64(how_far >> 64); seek_forward(low, high);}
+ 			void seek_backward128(unsigned __int128 how_far) {Uint64 low = Uint64(how_far); Uint64 high = Uint64(how_far >> 64); seek_backward(low, high);}
+ #endif
+@@ -113,7 +113,7 @@
+ 			//note that "add_entropy_N(&byte_buffer[0], 13)" will typically NOT produce the same state transition 
+ 			//  as "add_entropy_N(&byte_buffer[0], 7);add_entropy_N(&byte_buffer[7], 6);"
+ 			virtual void add_entropy_N(const void *, size_t length);//beware of endianness issues
+-#if defined __SIZEOF_INT128__
++#if defined __SIZEOF_INT128__ && !defined PRACTRAND_NO_INT128
+ #if defined PRACTRAND_TARGET_IS_LITTLE_ENDIAN
+ 			void add_entropy128(unsigned __int128 data) { Uint64 low = Uint64(data); Uint64 high = Uint64(data >> 64); add_entropy64(low); add_entropy64(high); }
+ #elif defined PRACTRAND_TARGET_IS_BIG_ENDIAN
+diff -ruN a/include/PractRand/rng_helpers.h b/include/PractRand/rng_helpers.h
+--- a/include/PractRand/rng_helpers.h
++++ b/include/PractRand/rng_helpers.h
+@@ -97,7 +97,7 @@
+ 		StateWalkingObject &operator<<(Sint64&v) { handle(v); return *this; }
+ 		StateWalkingObject &operator<<(float  &v){ handle(v); return *this; }
+ 		StateWalkingObject &operator<<(double &v){handle(v);return *this;}
+-#if defined __SIZEOF_INT128__
++#if defined __SIZEOF_INT128__ && !defined PRACTRAND_NO_INT128
+ 		void handle(unsigned __int128 &v) {
+ 			Uint64 *ptr = reinterpret_cast<Uint64*>(&v);
+ 			// first low, then high
+diff -ruN a/include/PractRand/test_helpers.h b/include/PractRand/test_helpers.h
+--- a/include/PractRand/test_helpers.h
++++ b/include/PractRand/test_helpers.h
+@@ -154,8 +154,8 @@
+ 					high = NULL;
+ 				}
+ 			}
+-			VariableSizeCount() : size(0), low(NULL), high(NULL) {}
+-			VariableSizeCount(int size_) : size(0), low(NULL), high(NULL) { set_size(size_); }
++			VariableSizeCount() : low(NULL), high(NULL), size(0) {}
++			VariableSizeCount(int size_) : low(NULL), high(NULL), size(0) { set_size(size_); }
+ 			~VariableSizeCount() { std::free(low); std::free(high); low = NULL; high = NULL; }
+ 			void increment(int index) {if (!++low[index]) high[index] += 1ull << (8*sizeof(LowIntType));}
+ 			const Uint64 &operator[] (int index) {
+diff -ruN a/src/RNGs/efiix.cpp b/src/RNGs/efiix.cpp
+--- a/src/RNGs/efiix.cpp
++++ b/src/RNGs/efiix.cpp
+@@ -376,7 +376,7 @@
+ PractRand::RNGs::Raw::efiix64x48::~efiix64x48() { std::memset(this, 0, sizeof(*this)); }
+ 
+ Uint8 PractRand::RNGs::Raw::efiix8x48::raw8() {
+-	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1];
++	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1]; (void)sizeof(check_efiix_array_sizes);
+ 	EFIIX_ALGORITHM(8, 3)
+ }
+ void PractRand::RNGs::Raw::efiix8x48::add_entropy8(Uint8 value) {
+@@ -411,7 +411,7 @@
+ 
+ 
+ Uint16 PractRand::RNGs::Raw::efiix16x48::raw16() {
+-	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1];//making sure they're powers of 2
++	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1]; (void)sizeof(check_efiix_array_sizes);//making sure they're powers of 2
+ 	EFIIX_ALGORITHM(16, 7)
+ }
+ void PractRand::RNGs::Raw::efiix16x48::seed(Uint64 seed_low, Uint64 seed_high) {
+@@ -443,10 +443,10 @@
+ 
+ 
+ Uint32 PractRand::RNGs::Raw::efiix32x48::raw32() {
+-	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1];
++	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1]; (void)sizeof(check_efiix_array_sizes);
+ 	EFIIX_ALGORITHM(32, 13)
+ }
+-static void mix4x32(Uint32 &a, Uint32 &b, Uint32 &c, Uint32 &d) {
++ [[gnu::unused]] static void mix4x32(Uint32 &a, Uint32 &b, Uint32 &c, Uint32 &d) {
+ 	b ^= a + (a << 13);
+ 	c += b ^ (b >> 5);
+ 	d ^= c + b;
+@@ -487,7 +487,7 @@
+ 
+ 
+ Uint64 PractRand::RNGs::Raw::efiix64x48::raw64() {
+-	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1];
++	typedef Word check_efiix_array_sizes[(ITERATION_SIZE & (ITERATION_SIZE-1)) || (INDIRECTION_SIZE & (INDIRECTION_SIZE-1)) ? -1 : 1]; (void)sizeof(check_efiix_array_sizes);
+ 	EFIIX_ALGORITHM(64, 25)
+ }
+ void PractRand::RNGs::Raw::efiix64x48::seed(Uint64 seed_low, Uint64 seed_high) {
+diff -ruN a/src/RNGs/mrsf.cpp b/src/RNGs/mrsf.cpp
+--- a/src/RNGs/mrsf.cpp
++++ b/src/RNGs/mrsf.cpp
+@@ -198,7 +198,7 @@
+ void PractRand::RNGs::Raw::mrsf32::walk_state(StateWalkingObject *walker) {
+ 	walker->handle(a);
+ 	walker->handle(b);
+-	if (!a && !b) a = b = ~0ull;// zero is a forbidden state for the current version of the algorithm
++	if (!a && !b) a = b = ~Uint32(0);// zero is a forbidden state for the current version of the algorithm
+ }
+ 
+ 
+diff -ruN a/src/RNGs/salsa.cpp b/src/RNGs/salsa.cpp
+--- a/src/RNGs/salsa.cpp
++++ b/src/RNGs/salsa.cpp
+@@ -219,7 +219,7 @@
+ 	rounds = rounds_;
+ 	//_core();
+ }
+-static void test_salsa ( Uint32 rounds, const Uint32 *seed_and_iv, bool short_seed, Uint32 expected0, Uint32 index, Uint32 expected1) {
++ [[gnu::unused]] static void test_salsa ( Uint32 rounds, const Uint32 *seed_and_iv, bool short_seed, Uint32 expected0, Uint32 index, Uint32 expected1) {
+ 	PractRand::RNGs::Raw::salsa rng;
+ 	rng.set_rounds(rounds);
+ 	if (!short_seed) rng.seed(seed_and_iv, false);
+diff -ruN a/src/math.cpp b/src/math.cpp
+--- a/src/math.cpp
++++ b/src/math.cpp
+@@ -131,7 +131,7 @@
+ 		}
+ 	}
+ 	namespace Internals {
+-		static const Uint8 count_low_zeroes_table[256] = {
++ [[gnu::unused]] static const Uint8 count_low_zeroes_table[256] = {
+ 			//	0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,
+ 			8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,//0
+ 			4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,//1
+@@ -150,7 +150,7 @@
+ 			5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,//14
+ 			4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,//15
+ 		};
+-		static const Uint8 count_high_zeroes_table[256] = {
++ [[gnu::unused]] static const Uint8 count_high_zeroes_table[256] = {
+ 			//	0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,
+ 			8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,//0
+ 			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,//1
+@@ -169,7 +169,7 @@
+ 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//14
+ 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,//15
+ 		};
+-		static const Sint8 ilog2_table[256] = {
++ [[gnu::unused]] static const Sint8 ilog2_table[256] = {
+ 			//	0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,
+ 			-1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3,//0
+ 			4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,//1
+@@ -986,7 +986,7 @@
+ 			}
+ 			return iterative / std::sqrt(3.14159265358979 * x);*/
+ 		}
+-		static double math_inverse_erf(double x) {
++ [[gnu::unused]] static double math_inverse_erf(double x) {
+ 			if (x < 0) return -math_inverse_erf(-x);
+ 			if (x > 1) {
+ 				issue_error("inverse_erf: invalid input\n");
+@@ -1080,7 +1080,7 @@
+ 			}
+ 			issue_error("error in math_regularized_gamma_function"); return -1;
+ 		}
+-		static double math_upper_incomplete_gamma(double a, double x) {
++ [[gnu::unused]] static double math_upper_incomplete_gamma(double a, double x) {
+ 			if (a == 1) return std::exp(-x);
+ 			if (std::fabs(floor(a+.5)-a) <= 0.00000000001) {
+ 				if (!x) return math_factorial(a-1);
+@@ -1379,7 +1379,7 @@
+ 			double size_f = size;
+ 			double size_a = size + 1.0;
+ 			long double scale = (size + 1.0) * 1.7810724179901979852;// 1.781... is e^x where x is Euler's constant
+-			double size_inv = 1.0 / size_a;
++			double size_inv = 1.0 / size_a; (void)size_inv;
+ 			double prior = 0;
+ 			double sum_log = 0;
+ 			//double sum_exp = 0;
+@@ -1446,15 +1446,15 @@
+ 				it might be proportional to total count minus the number of categories with non-zero counts?
+ 				it could be brute-forced by taking known good PRNG and randomly generating each spacing, but that seems both excessive and undesirably noisy
+ 			*/
+-			long double prob_sum = 0;
++			long double prob_sum = 0; (void)prob_sum;
+ 			long double total = 0;
+ 			for (unsigned long i = 0; i < categories; i++) total += counts[i];
+ 			if (!total) return 0;
+ 			long double scale = (total + 1.0) * 1.7810724179901979852;// 1.781... is e^x where x is Euler's constant
+-			long double sum_exp = 0, sum_log = 0, longest = 0;
++			long double sum_exp = 0, sum_log = 0, longest = 0; (void)sum_exp;
+ 			double post_distance = 0;
+ 
+-			double blah = 0;
++			double blah = 0; (void)blah;
+ 
+ 			for (unsigned long i = 0; i < categories; i++) {
+ 				double cur_prob = prob_table[i];
+@@ -1505,17 +1505,17 @@
+ 			/*
+ 				as above, except this one attempts to brute-force the conversion from testing a set of uniform samples (ranging from 0 to 1) to a chi-squared-test-style test of categorized samples
+ 			*/
+-			long double prob_sum = 0;
++			long double prob_sum = 0; (void)prob_sum;
+ 			long double total = 0;
+ 			for (unsigned long i = 0; i < categories; i++) total += counts[i];
+ 			if (!total) return 0;
+ 			long double scale = (total + 1.0) * 1.7810724179901979852;// 1.781... is e^x where x is Euler's constant
+-			long double sum_exp = 0, sum_log = 0, longest = 0;
++			long double sum_exp = 0, sum_log = 0, longest = 0; (void)sum_exp;
+ 			//double adjusted_total = total + 1.0;
+ 			double running_total_distance = 0;
+ 			//double DoF = 0;
+ 
+-			double blah = 0;
++			double blah = 0; (void)blah;
+ 
+ 			for (unsigned long i = 0; i < categories; i++) {
+ 				double remaining_prob = prob_table[i];
+@@ -1562,7 +1562,7 @@
+ 				instead, in each category, it generates a lowest random number, a highest random number, and mean and variance for the results of all the rest
+ 				it can do this only for sum_log, not longest, so that gets ignored
+ 			*/
+-			long double prob_sum = 0;
++			long double prob_sum = 0; (void)prob_sum;
+ 			long double total = 0;
+ 			for (unsigned long i = 0; i < categories; i++) total += counts[i];
+ 			if (!total) return 0;
+@@ -1570,8 +1570,8 @@
+ 			long double sum_log = 0;
+ 			double running_total_distance = 0;
+ 
+-			double mean_of_skipped_components = 0;
+-			double variance_of_skipped_components = 0;
++			double mean_of_skipped_components = 0; (void)mean_of_skipped_components;
++			double variance_of_skipped_components = 0; (void)variance_of_skipped_components;
+ 
+ 			for (unsigned long i = 0; i < categories; i++) {
+ 				double remaining_prob = prob_table[i];
+diff -ruN a/src/non_uniform.cpp b/src/non_uniform.cpp
+--- a/src/non_uniform.cpp
++++ b/src/non_uniform.cpp
+@@ -400,7 +400,7 @@
+ 			//*/
+ 			int index = count_ones64(raw64_b);
+ 			double f = static_cast<Sint64>(raw64_a);
+-			double f2 = f * f;
++			double f2 = f * f; (void)f2;
+ 			double rv = gaussian_table_order0[index] + gaussian_table_order1[index] * f;
+ 			return rv;
+ 		}
+@@ -812,7 +812,7 @@
+ 			};
+ 			static FP_type tail_area = 0.0002880542561989152;
+ #endif
+-			static const FP_type gaussian_scale = 0.398942280401432678;//sqrt(1/(2*pi))
++ [[gnu::unused]] static const FP_type gaussian_scale = 0.398942280401432678;//sqrt(1/(2*pi))
+ #if defined GENERATE_ZIGGURAT_STUFF
+ 			bool inited = false;
+ 			void calculate_stripe_areas(double areas[NUM_STRIPES], double&average_area, double&area_deviation) {
+diff -ruN a/src/sha2.cpp b/src/sha2.cpp
+--- a/src/sha2.cpp
++++ b/src/sha2.cpp
+@@ -238,7 +238,7 @@
+ 			process_block();
+ 		}
+ 		void SHA2_512::finish (Uint8 destination[SHA2_512::RESULT_LENGTH]) {
+-			typedef SHA2_512_constants Constants;
++			typedef SHA2_512_constants Constants; (void)sizeof(Constants);
+ 			process_final_block();
+ 			endianness_state();
+ 			std::memcpy(destination, state, RESULT_LENGTH);
+diff -ruN a/src/tests_core.cpp b/src/tests_core.cpp
+--- a/src/tests_core.cpp
++++ b/src/tests_core.cpp
+@@ -1656,15 +1656,15 @@
+ 
+ 
+ 
+-static long double gap_probs(int first, int last, long double chance_of_not_gap1) {
++ [[gnu::unused]] static long double gap_probs(int first, int last, long double chance_of_not_gap1) {
+ 	return std::pow(chance_of_not_gap1, (long double)first) - std::pow(chance_of_not_gap1, (long double)last + 1);
+ }
+-static long double gap_probs64(Uint64 first, Uint64 last, long double chance_of_not_gap1) {
++ [[gnu::unused]] static long double gap_probs64(Uint64 first, Uint64 last, long double chance_of_not_gap1) {
+ 	return std::pow(chance_of_not_gap1, (long double)first) - std::pow(chance_of_not_gap1, (long double)last + 1);
+ }
+ static long double gap_expected(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double e = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 20.0 / chance_of_gap1 + 100;
+ 	for (long double i = 1; i < end; i++) {
+ 		long double p = chance_of_gap1 * std::pow(1 - chance_of_gap1, i - 1);
+@@ -1673,10 +1673,10 @@
+ 	}
+ 	return e;
+ }
+-static long double gap_variance(long double chance_of_gap1 = 1.0 / 65536) {
++ [[gnu::unused]] static long double gap_variance(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double e = gap_expected(chance_of_gap1);
+ 	long double var = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 20.0 / chance_of_gap1 + 100;
+ 	for (long double i = 1; i < end; i++) {
+ 		long double p = chance_of_gap1 * std::pow(1 - chance_of_gap1, i - 1);
+@@ -1688,7 +1688,7 @@
+ }
+ static long double gap_log2_expected(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double Le = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 30.0 / chance_of_gap1 + 100;
+ 	long double partial_Le = 0;
+ 	long double partial_t = 0;
+@@ -1707,10 +1707,10 @@
+ 	t += partial_t;
+ 	return Le;
+ }
+-static long double gap_log2_variance(long double chance_of_gap1 = 1.0 / 65536) {
++ [[gnu::unused]] static long double gap_log2_variance(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double Le = gap_log2_expected(chance_of_gap1);
+ 	long double var = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 20.0 / chance_of_gap1 + 100;
+ 	long double partial_var = 0;
+ 	long double partial_t = 0;
+@@ -1768,7 +1768,7 @@
+ }
+ Uint32 PractRand::Tests::DistC6::_reorder_bits ( Uint32 code, int bits_per_sample, int length ) {
+ 	if (!ENABLE_REORDER) return code;
+-	int tbits = bits_per_sample * length;
++	int tbits = bits_per_sample * length; (void)tbits;
+ 	int r = 0;
+ 	for (int i = 0; i < length; i++) {
+ 		for (int j = 0; j < bits_per_sample; j++) {
+@@ -1796,7 +1796,7 @@
+ 		for (int i = 0; i <= (1 << (3+unitsL)); i++) {
+ 			int trans = transform_bitcount(i);
+ 			int rc = reorder_codes(trans);
+-			int rb = reorder_bits(rc);
++			int rb = reorder_bits(rc); (void)rb;
+ 			lookup_table[i] = reorder_bits(reorder_codes(transform_bitcount(i)));
+ 		}
+ 	}
+@@ -1805,7 +1805,7 @@
+ 		for (int i = 0; i <= (1 << (3+unitsL)); i++) {
+ 			int trans = transform_bitcount(i);
+ 			int rc = reorder_codes(trans);
+-			int rb = reorder_bits(rc);
++			int rb = reorder_bits(rc); (void)rb;
+ 			tmp[i] = reorder_bits(reorder_codes(transform_bitcount(i)));
+ 		}
+ 		for (int i = 0; i < 256; i++) {
+@@ -1987,7 +1987,7 @@
+ 	for (i = 0; i < (1 << bits_per_sample); i++) _tprobs[i] = 0;
+ 	for (i = 0; i < NP; i++) _tprobs[transform_bitcount(i)] += _probs[i];
+ 
+-	long double sum1 = 0;
++	long double sum1 = 0; (void)sum1;
+ 	for (i = 0; i < NP; i++) sum1 += _probs[i];
+ //	sum1 = sqrt(sum1);
+ //	for (i = 0; i < (1 << bits_per_sample); i++) _probs[i] /= sum1;
+@@ -3053,7 +3053,7 @@
+ 
+ 
+ 
+-PractRand::Tests::FPF::FPF(int stride_bits_L2_ , int sig_bits_ , int exp_bits_ ) : stride_bits_L2(stride_bits_L2_), sig_bits(sig_bits_), exp_bits(exp_bits_) {
++PractRand::Tests::FPF::FPF(int stride_bits_L2_ , int sig_bits_ , int exp_bits_ ) : sig_bits(sig_bits_), exp_bits(exp_bits_), stride_bits_L2(stride_bits_L2_) {
+ 	if (sig_bits > MAX_SIG_BITS) issue_error();
+ 	if (exp_bits > 6) issue_error();
+ 	for (int i = 0; i <= 32; i++) {
+@@ -3066,8 +3066,8 @@
+ 	unsigned long max_exp = (1 << exp_bits) - 1;
+ 	if (max_exp - 1 + sig_bits > 64) max_exp = 64 + 1 - sig_bits;
+ 	unsigned long max_sig = (1 << sig_bits) - 1;
+-	unsigned long footprint = sig_bits + max_exp;
+-	unsigned long stride_bits = 1 << stride_bits_L2;
++	unsigned long footprint = sig_bits + max_exp; (void)footprint;
++	unsigned long stride_bits = 1 << stride_bits_L2; (void)stride_bits;
+ 
+ 	int total_size = (max_sig + 1) * (max_exp + 1);
+ //	int bits = sig_bits + exp_bits;
+@@ -3130,7 +3130,7 @@
+ 				if (ebits < 3) continue; // too few distinct values show up in calibration data
+ 				double raw = g_test(bins, &intra_probs[0], &intra_counts[0]);
+ 				double norm = math_chisquared_to_normal(raw, bins-1);
+-				double p = math_normaldist_to_pvalue(norm);
++				double p = math_normaldist_to_pvalue(norm); (void)p;
+ 				std::ostringstream namestr;
+ 				namestr << get_name() << ":" << "(" << e << "," << sig_bits << "-" << (sig_bits-ebits);
+ 				std::ostringstream teststr;
+@@ -3151,7 +3151,7 @@
+ 	if (over_bins >= 2) {//on short runs this may be the only usable result from FPF
+ 		over_raw *= 2;
+ 		double over_norm = math_chisquared_to_normal(over_raw, over_bins-1);
+-		double over_p = math_normaldist_to_pvalue(over_norm);
++		double over_p = math_normaldist_to_pvalue(over_norm); (void)over_p;
+ 		TestCalibrationData *calib = calibration_manager.get_calibration_data("FPF-14+6/16:overall", samples / 512.0 + 0.5);
+ 		if (stride_bits_L2 < 2 || sig_bits != 14 || exp_bits < 4) calib = NULL;
+ 		if (calib && samples >= 3000)
+@@ -3180,14 +3180,14 @@
+ 		if (calib) results.push_back(TestResult(get_name() + ":all2", sum_s, -calib->sample_to_suspicion(sum_s), TestResult::TYPE_GOOD_S, 0.1));
+ 		else results.push_back(TestResult(get_name() + ":all2", sum_s, sum_s, TestResult::TYPE_RAW_NORMAL, 0.1));
+ 	}
+-	double actual_samples = 0;
++	double actual_samples = 0; (void)actual_samples;
+ 	for (int e = 0; e <= max_exp; e++) actual_samples += inter_counts[e];
+ 	if (samples >= 1000) {
+ 		for (int e = 0; e <= max_exp; e++) inter_probs[e] = std::pow(0.5, e+1.0+(e==max_exp?-1:0));
+ 		int bins = simplify_prob_table(max_exp+1, samples/40.0, &inter_probs[0], &inter_counts[0], true, true);
+ 		double raw = g_test(bins, &inter_probs[0], &inter_counts[0]);
+ 		double norm = math_chisquared_to_normal(raw, bins-1) / std::sqrt(2.0);
+-		double p = math_normaldist_to_pvalue(norm);
++		double p = math_normaldist_to_pvalue(norm); (void)p;
+ 		std::ostringstream str; str << get_name() << ":cross";
+ 		TestCalibrationData *calib = calibration_manager.get_calibration_data( "FPF-14+6/16:cross", samples / 512.0 + 0.5 );
+ 		if (calib) 
+@@ -3199,7 +3199,7 @@
+ 	unsigned long max_exp = (1 << exp_bits) - 1;
+ 	if (max_exp - 1 + sig_bits > 64) max_exp = 64 + 1 - sig_bits;
+ 	unsigned long max_sig = (1 << sig_bits) - 1;
+-	unsigned long footprint = sig_bits + max_exp;
++	unsigned long footprint = sig_bits + max_exp; (void)footprint;
+ 	unsigned long stride_bits = 1 << stride_bits_L2;
+ 
+ 	if (max_exp + sig_bits - 1 <= 32) {
+@@ -3227,10 +3227,7 @@
+ 			Uint32 cur;
+ 			long start;
+ 			if (blocks_tested) {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Warray-bounds"
+-				cur = reverse_bits32(data->as32[-1]);
+-#pragma GCC diagnostic pop
++				cur = reverse_bits32(reinterpret_cast<Uint32 *>(data)[-1]);
+ 				start = 0;
+ 			}
+ 			else {
+@@ -3294,10 +3291,7 @@
+ 			long start;
+ 			Uint32 cur;
+ 			if (blocks_tested) {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Warray-bounds"
+-				cur = data->as32[-2];//
+-#pragma GCC diagnostic pop
++				cur = reinterpret_cast<Uint32 *>(data)[-2];//
+ 				start = -1;
+ 			}
+ 			else {
+@@ -3531,7 +3525,7 @@
+ 		std::ostringstream name;
+ 		name << this->get_name() << ":";
+ 		if (s.size & (TestBlock::SIZE - 1)) name << s.size; else name << (s.size >> TestBlock::SIZE_L2) << "K";
+-		int L2 = int(std::log((double)s.total)/std::log(2.0));
++		int L2 = int(std::log((double)s.total)/std::log(2.0)); (void)L2;
+ 		/*if (L2 < 10) name << "(" << L2 << ")";
+ 		else {
+ 			char blah[2] = {char('A' + L2 - 10), 0};
+@@ -3795,7 +3789,7 @@
+ 			}
+ 		}
+ 		else {
+-			double p1 = math_normaldist_to_pvalue(normalized_score);
++			double p1 = math_normaldist_to_pvalue(normalized_score); (void)p1;
+ 			double p2; 
+ 			if (normalized_score > 0) p2 = 0.5 * std::exp(-normalized_score);
+ 			else p2 = 1 - 0.5 * std::exp(normalized_score);
+@@ -3969,8 +3963,8 @@
+ 		0,	1,	2,	0,	1,	2,	0,	1,	2,	0,	1,	2,	0,	1,	2,	0, // 63
+ };
+ static Uint8 combine_mod3s(Uint8 a, Uint8 b) { return mod3_table[a + b]; }
+-static Uint8 combine_mod3s(Uint8 a, Uint8 b, Uint8 c) { return mod3_table[a + b + c]; }
+-static Uint8 combine_mod3s(Uint8 a, Uint8 b, Uint8 c, Uint8 d) { return mod3_table[a + b + c + d]; }
++ [[gnu::unused]] static Uint8 combine_mod3s(Uint8 a, Uint8 b, Uint8 c) { return mod3_table[a + b + c]; }
++ [[gnu::unused]] static Uint8 combine_mod3s(Uint8 a, Uint8 b, Uint8 c, Uint8 d) { return mod3_table[a + b + c + d]; }
+ static Uint8 u8_mod3(Uint8 v) { return mod3_table[v]; }
+ //static Uint8 u16_mod3(Uint16 v) { return combine_mod3s(mod3_table[Uint8(v)], mod3_table[v >> 8]); }
+ static Uint8 u16_mod3(Uint16 v) { return mod3_table[(v & 255) + (v >> 8)]; }
+@@ -4013,7 +4007,7 @@
+ 		}
+ 		probs[i] = std::pow(base1, EXP - num_zeroes - 0.0) * std::pow(base2, num_zeroes - 0.0);
+ 	}
+-	Uint64 samples = blocks_tested * TestBlock::SIZE / sizeof(Word)-EXP + 1;
++	Uint64 samples = blocks_tested * TestBlock::SIZE / sizeof(Word)-EXP + 1; (void)samples;
+ 
+ 	Uint64 cat = K;
+ 	/*
+@@ -4181,7 +4175,7 @@
+ 		if (effective_EXP > EXP) effective_EXP = EXP;
+ 
+ 		int effective_K = int(std::pow(3.0, (double)effective_EXP));
+-		double E = predicted_samples / effective_K;
++		double E = predicted_samples / effective_K; (void)E;
+ 
+ 		PerLevel &pl = levels[level];
+ 		const Uint64 *_counts = pl.counts.get_array();
+@@ -4386,7 +4380,7 @@
+ 
+ 
+ 
+-PractRand::Tests::BirthdaySystematic2::BirthdaySystematic2(Uint8 skip_level_, Uint8 buffer_size_L2_) : skip_level(skip_level_), buffer_size_L2(buffer_size_L2_) {
++PractRand::Tests::BirthdaySystematic2::BirthdaySystematic2(Uint8 skip_level_, Uint8 buffer_size_L2_) : buffer_size_L2(buffer_size_L2_), skip_level(skip_level_) {
+ 	if (buffer_size_L2 < 22 || buffer_size_L2 > 26) issue_error("BirthdaySystematic2 constructor - buffer_size_L2 out of range (should be 22-26)");
+ 	Uint64 buffer_size = 1ull << buffer_size_L2;
+ 	buffer = new Uint64[buffer_size];
+@@ -4610,7 +4604,7 @@
+ 		if (!total_flushes) {//still in warmup period
+ 			for (long i = 0; i < 2 * VALUES_PER_BLOCK; i += 2) {
+ 				Uint64 low = data[0].as64[i + LOW];
+-				Uint64 high = data[0].as64[i + HIGH];
++				Uint64 high = data[0].as64[i + HIGH]; (void)high;
+ 				buffer[num_buffered++] = low;
+ 			}
+ 			if (!(num_buffered & (num_buffered - 1))) {//power of 2
+diff -ruN a/src/tests_other.cpp b/src/tests_other.cpp
+--- a/src/tests_other.cpp
++++ b/src/tests_other.cpp
+@@ -49,7 +49,7 @@
+ }
+ static long double gap_expected(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double e = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 20.0 / chance_of_gap1 + 100;
+ 	for (long double i = 1; i < end; i++) {
+ 		long double p = chance_of_gap1 * std::pow(1 - chance_of_gap1, i - 1);
+@@ -58,10 +58,10 @@
+ 	}
+ 	return e;
+ }
+-static long double gap_variance(long double chance_of_gap1 = 1.0 / 65536) {
++ [[gnu::unused]] static long double gap_variance(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double e = gap_expected(chance_of_gap1);
+ 	long double var = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 20.0 / chance_of_gap1 + 100;
+ 	for (long double i = 1; i < end; i++) {
+ 		long double p = chance_of_gap1 * std::pow(1 - chance_of_gap1, i - 1);
+@@ -73,7 +73,7 @@
+ }
+ static long double gap_log2_expected(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double Le = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 30.0 / chance_of_gap1 + 100;
+ 	long double partial_Le = 0;
+ 	long double partial_t = 0;
+@@ -92,10 +92,10 @@
+ 	t += partial_t;
+ 	return Le;
+ }
+-static long double gap_log2_variance(long double chance_of_gap1 = 1.0 / 65536) {
++ [[gnu::unused]] static long double gap_log2_variance(long double chance_of_gap1 = 1.0 / 65536) {
+ 	long double Le = gap_log2_expected(chance_of_gap1);
+ 	long double var = 0;
+-	long double t = 0;
++	long double t = 0; (void)t;
+ 	long double end = 20.0 / chance_of_gap1 + 100;
+ 	long double partial_var = 0;
+ 	long double partial_t = 0;
+@@ -331,7 +331,7 @@
+ 	double r_fine, r_coarse;
+ 	double r_rarity = rarity_test(highest_index + 1, &probs[0], &counts[0], true, true);
+ 	if (extreme_lags.size()) {
+-		double excess_gap = 0;
++		double excess_gap = 0; (void)excess_gap;
+ 		for (int i = 0; i < extreme_lags.size(); i++) excess_gap += extreme_lags[i] - (1 << 17);
+ 		//r_rarity += excess_gap * ??? / std::sqrt(double(total_counts));
+ 	}
+@@ -362,8 +362,8 @@
+ 	TestCalibrationData *calib2 = calibration_manager.get_calibration_data("Gap-16:B", blocks_tested);
+ 	double s1 = calib1->sample_to_suspicion(r_fine) * -1;
+ 	double s2 = calib2->sample_to_suspicion(r_coarse) * -1;
+-	double cp1 = TestResult::suspicion_to_pvalue(s1);
+-	double cp2 = TestResult::suspicion_to_pvalue(s2);
++	double cp1 = TestResult::suspicion_to_pvalue(s1); (void)cp1;
++	double cp2 = TestResult::suspicion_to_pvalue(s2); (void)cp2;
+ 	results.push_back(TestResult(get_name() + ":A", r_fine, s1, TestResult::TYPE_GOOD_S, 0.5));
+ 	results.push_back(TestResult(get_name() + ":B", r_coarse, s2, TestResult::TYPE_GOOD_S, 0.5));
+ 	results.push_back(TestResult(get_name() + ":C", r_rarity, r_rarity, TestResult::TYPE_BAD_S, 0.5));
+@@ -406,7 +406,7 @@
+ 	if (false) {
+ 		long double expected = expected_log_gap;
+ 		long double mean = 0;
+-		long double mean2 = 0;
++		long double mean2 = 0; (void)mean2;
+ 		long double mean3 = 0;
+ 		long double accum1 = 0;
+ 		long double accum2 = 0;
+@@ -460,7 +460,7 @@
+ 		last[a] = ++ofs;
+ 		handle_gap(ofs - prior);
+ 	}
+-	Uint64 oblocks = blocks_tested;
++	Uint64 oblocks = blocks_tested; (void)oblocks;
+ 	blocks_tested += numblocks;
+ }
+ void PractRand::Tests::GapUniversal1::get_results(std::vector<TestResult> &results) {
+@@ -504,7 +504,7 @@
+ 	Uint16 *base = &data[0].as16[0];
+ 	if (warmup) while (ofs != max2) {
+ 		Uint16 a;
+-		Uint32 prior, lag;
++		Uint32 prior, lag; (void)lag;
+ 
+ 		a = *(base++);
+ 		ofs += 1;
+@@ -579,7 +579,7 @@
+ 	Uint64 running_gap = 0;
+ 	Uint64 first_extra_gap = 0;
+ 	double extra_lg = 0;
+-	Uint64 extra_hits = 0;
++	Uint64 extra_hits = 0; (void)extra_hits;
+ 	for (int i = 0; i < 65536; i++) {
+ 		if (state[i] == 0) {
+ 			running_gap += base_length;
+@@ -670,7 +670,7 @@
+ 		overall_mean = 0;
+ 		overall_variance = 0;
+ 		const long double expected_mean = 15.16737;
+-		long double overall_total_chance = 0;
++		long double overall_total_chance = 0; (void)overall_total_chance;
+ 		for (i = 0; i < 1 << LOW_BITS; i++) {
+ 			low_bit_indexed_data[i].gap_product = 1.0;
+ 			low_bit_indexed_data[i].gap_product_extracted_L2 = 0;
+@@ -738,7 +738,7 @@
+ 	Uint16 *base = &data[0].as16[0];
+ 	if (warmup) while (ofs != max2) {
+ 		Uint16 a;
+-		Uint32 prior, lag;
++		Uint32 prior, lag; (void)lag;
+ 
+ 		a = *(base++);
+ 		ofs += 1;
+@@ -809,7 +809,7 @@
+ 		normalize(low_bit_indexed_data[i]);
+ 	}
+ 	Uint64 base_length = blocks_tested * TestBlock::SIZE / sizeof(Uint16);
+-	Sint64 _base_length = 0; for (int i = 0; i < (1 << LOW_BITS); i++) _base_length += low_bit_indexed_data[i].hits; 
++	Sint64 _base_length = 0; for (int i = 0; i < (1 << LOW_BITS); i++) _base_length += low_bit_indexed_data[i].hits; (void)_base_length;
+ 	LBI rollback_data[1 << LOW_BITS];
+ 	for (int i = 0; i < (1 << LOW_BITS); i++) rollback_data[i] = low_bit_indexed_data[i];
+ 	Uint64 running_gap = 0;
+@@ -859,8 +859,8 @@
+ 
+ 	double single_lg = 0;
+ 	double single_variance = 0;
+-	Uint64 single_hits = 0;
+-	double single_lg_bias = 0;
++	Uint64 single_hits = 0; (void)single_hits;
++	double single_lg_bias = 0; (void)single_lg_bias;
+ 	for (int i = 0; i < (1 << LOW_BITS); i++) {
+ 		single_lg += low_bit_indexed_data[i].gap_product_extracted_L2 + std::log2(low_bit_indexed_data[i].gap_product);
+ 		single_variance += low_bit_indexed_data[i].hits * variances[i];
+@@ -1098,8 +1098,8 @@
+ 				if (HIGHER_LEVELS_STILL_COUNT_TOWARDS_LOWER)
+ 					for (long match_level2 = match_level + 1; match_level2 < MATCH_LEVELS; match_level2++) tmp_counts[i] += counts[(i << MATCH_LEVELS_L2) + match_level2];
+ 			}
+-			double norm_u = uniformity_test(max_cat, tmp_probs, tmp_counts);
+-			double norm_r = rarity_test(max_cat, tmp_probs, tmp_counts, true, true);
++			double norm_u = uniformity_test(max_cat, tmp_probs, tmp_counts); (void)norm_u;
++			double norm_r = rarity_test(max_cat, tmp_probs, tmp_counts, true, true); (void)norm_r;
+ 			long cat = max_cat;
+ 			cat = simplify_prob_table(cat, std::pow(expected_at_match_level, 0.5) / 40.0, tmp_probs, tmp_counts, true, true);
+ 			double chis = g_test(cat, tmp_probs, tmp_counts);
+@@ -1672,7 +1672,7 @@
+ 		0.0088151932052590,//8 Kbit
+ 		0.0062333780055594//16 Kbit
+ 	};
+-	const double ref_chance = 1 - chance_skipped[5];
++	const double ref_chance = 1 - chance_skipped[5]; (void)ref_chance;
+ 
+ 	const double ref_chance_unbalanced = 1 - calculate_center_bit_combination_chance(5);
+ 	std::vector<Uint64> tempcount; tempcount.resize(1 << tbits);
+@@ -1829,7 +1829,7 @@
+ 				int reduced_size = simplify_prob_table(COUNTS2_SIZE, samples / 40., &probs[1], &counts2_dup[1], true, false);
+ 				double tr = g_test(reduced_size, &probs[1], &counts2_dup[1]);
+ 				double n = math_chisquared_to_normal(tr, reduced_size-1);
+-				double p = math_chisquared_to_pvalue(tr, reduced_size - 1);
++				double p = math_chisquared_to_pvalue(tr, reduced_size - 1); (void)p;
+ 				double p2 = math_normaldist_to_pvalue(-n / 1.6);
+ 				std::ostringstream name;
+ 				name << "BCFN_FF(" << unitsL2 << "+" << level << "):freq";
+@@ -2069,7 +2069,7 @@
+ #define GET_BITS(a) GET_BITS64(a)
+ 			case 3: {
+ 				for (unsigned long i = 0; i < max; i+=8) {
+-					int bits0, bits1, bits2, bits3;
++					int bits0, bits1, bits2, bits3; (void)bits3;
+ 					int tmp;
+ 					//0
+ 					bits1 = bits0 = GET_BITS(0);
+@@ -2353,7 +2353,7 @@
+ 	return "FPM";
+ }
+ void PractRand::Tests::FPMulti::get_results(std::vector<TestResult> &results) {
+-	Uint64 total_samples = blocks_tested * (TestBlock::SIZE / sizeof(Uint64));
++	Uint64 total_samples = blocks_tested * (TestBlock::SIZE / sizeof(Uint64)); (void)total_samples;
+ 
+ 	if (1) {// gap test preliminary work checking for autofail
+ 		for (int e = 0; e <= MAX_EXP && !autofail; e++) {
+@@ -2412,9 +2412,9 @@
+ 		Uint64 total_gap_hits = 0;
+ 		double total_gap_product_L2 = 0;
+ 		double total_gap_product_L2_adjusted_variance = 0;
+-		Uint64 total_gap_first_hits = 0;
+-		double total_gap_first_hit_product_L2 = 0;
+-		double total_gap_first_hit_product_L2_adjusted_variance = 0;
++		Uint64 total_gap_first_hits = 0; (void)total_gap_first_hits;
++		double total_gap_first_hit_product_L2 = 0; (void)total_gap_first_hit_product_L2;
++		double total_gap_first_hit_product_L2_adjusted_variance = 0; (void)total_gap_first_hit_product_L2_adjusted_variance;
+ 
+ 		for (int e = 0; e <= MAX_EXP; e++) {
+ 			int L = GAP_SIG_BITS + e - (e == MAX_EXP ? 1 : 0);
+@@ -2438,7 +2438,7 @@
+ 			total_gap_hits += p.gap_hits;
+ 			total_gap_product_L2 += gap_product_L2;
+ 			total_gap_product_L2_adjusted_variance += adjusted_variance;
+-			double avg = gap_product_L2 / p.gap_hits;
++			double avg = gap_product_L2 / p.gap_hits; (void)avg;
+ 			double norm = gap_product_L2 / std::sqrt(adjusted_variance);
+ 			if (adjusted_variance < 300) continue;
+ 
+@@ -2462,7 +2462,7 @@
+ 			*/
+ 		}
+ 		if (total_gap_product_L2_adjusted_variance > 5000) {
+-			double avg = total_gap_product_L2 / total_gap_hits;
++			double avg = total_gap_product_L2 / total_gap_hits; (void)avg;
+ 			double norm = total_gap_product_L2 / std::sqrt(total_gap_product_L2_adjusted_variance);
+ 			std::ostringstream buf;
+ 			buf << get_name() << ":G" << GAP_SIG_BITS << ":comb";
+@@ -2640,11 +2640,8 @@
+ 		long start;
+ 		Uint32 cur,next;
+ 		if (blocks_tested) {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Warray-bounds"
+-			cur = data->as32[-2];//64 bit samples on 32 bit words
+-			next = data->as32[-1];
+-#pragma GCC diagnostic pop
++			cur = reinterpret_cast<Uint32 *>(data)[-2];//64 bit samples on 32 bit words
++			next = reinterpret_cast<Uint32 *>(data)[-1];
+ 			start = -1;
+ 		}
+ 		else {
+@@ -2788,7 +2785,7 @@
+ 	Uint32 sort_helper[SORTHELP_SIZE + 1];
+ 	std::memset(sort_helper, 0, (SORTHELP_SIZE + 1) * sizeof(Uint32));
+ 	for (int i = 0; i < BUFFER_SIZE; i++) sort_helper[1 + (buffer[i] >> (32 - SORTHELP_SIZE_L2))]++;
+-	int running_total = 0;
++	int running_total = 0; (void)running_total;
+ 	for (int i = 2; i <= SORTHELP_SIZE; i++) {
+ 		sort_helper[i] += sort_helper[i-1];
+ 	}
+@@ -2817,7 +2814,7 @@
+ }
+ void PractRand::Tests::Birthday32::test_blocks(TestBlock *data, int numblocks) {
+ 	while (numblocks) {
+-		Uint32 *ptr = &buffer[num_buffered];
++		Uint32 *ptr = &buffer[num_buffered]; (void)ptr;
+ 		if (false) buffer[num_buffered++] = data[0].as32[0];
+ 		else {
+ 			std::memcpy(&buffer[num_buffered], &data[0].as32[0], TestBlock::SIZE);
+@@ -2976,7 +2973,7 @@
+ 	copied_buffer.clear();
+ 	shift -= SORT_HELPER_BITS;
+ 	bits_already += SORT_HELPER_BITS;
+-	long begin = 0;
++	long begin = 0; (void)begin;
+ 	for (long ri = 0; ri < (1 << SORT_HELPER_BITS); ri++) {
+ 		long end = region_bases[ri];
+ 		long begin = ri ? region_bases[ri - 1] : 0;
+@@ -3087,7 +3084,7 @@
+ }
+ void PractRand::Tests::Birthday64::test_blocks(TestBlock *data, int numblocks) {
+ 	while (numblocks) {
+-		Uint64 *ptr = &buffer[num_buffered];
++		Uint64 *ptr = &buffer[num_buffered]; (void)ptr;
+ 		std::memcpy(&buffer[num_buffered], &data[0].as64[0], TestBlock::SIZE);
+ 		num_buffered += TestBlock::SIZE / sizeof(Uint64);
+ 		if (num_buffered == BUFFER_SIZE) flush_buffer();
+@@ -3133,7 +3130,7 @@
+ 	Uint64 regions[COMBINED_PASSES << SORT_HELPER_BITS];
+ 	if (true) {//count frequencies for each pass
+ 		for (long i = 0; i < (COMBINED_PASSES << SORT_HELPER_BITS); i++) regions[i] = 0;
+-		long shift = 64 - SORT_HELPER_BITS - bits_already;
++		long shift = 64 - SORT_HELPER_BITS - bits_already; (void)shift;
+ 		Uint64 already_check_mask = ((1ull << bits_already) - 1) << (64 - bits_already);//debuging check, remove sometime
+ 		Uint64 already_check_value = buffer[0].high & already_check_mask;//debuging check, remove sometime
+ 		for (Uint64 i = 0; i < length; i++) {
+@@ -3497,7 +3494,7 @@
+ 	Uint64 regions[COMBINED_PASSES << SORT_HELPER_BITS];
+ 	if (true) {//count frequencies for each pass
+ 		for (long i = 0; i < (COMBINED_PASSES << SORT_HELPER_BITS); i++) regions[i] = 0;
+-		long shift = 64 - SORT_HELPER_BITS - bits_already;
++		long shift = 64 - SORT_HELPER_BITS - bits_already; (void)shift;
+ 		Uint64 already_check_mask = ((1ull << bits_already) - 1) << (64 - bits_already);//debuging check, remove sometime
+ 		Uint64 already_check_value = buffer[0] & already_check_mask;//debuging check, remove sometime
+ 		for (Uint64 i = 0; i < length; i++) {
+@@ -3566,7 +3563,7 @@
+ 	Uint64 bitmask[ARRAY_BITS / WORD_BITS];// that's 8 kilobytes for 16 bits
+ 	std::memset(bitmask, 0, ARRAY_BITS / 8);
+ 	long count = 0;
+-	Uint64 ored;
++	Uint64 ored = 0;
+ 	Uint64 *end = buffer + length;
+ 	for (; buffer != end; buffer++) {Uint64 current = *buffer;
+ 	//for (Uint64 i = 0; i < length; i++) {Uint64 current = buffer[i];
+@@ -3791,7 +3788,7 @@
+ 	if (num_unsorted) {
+ 		if (already_sorted) {
+ 			BirthdayHelpers::histogram_in_place_sort128(&buffer[already_sorted], num_unsorted);
+-			Uint64 p1 = 0, p2 = already_sorted, p3 = half_buffer_size, max = half_buffer_size + num_buffered;
++			Uint64 p1 = 0, p2 = already_sorted, p3 = half_buffer_size, max = half_buffer_size + num_buffered; (void)max;
+ 			while (true) {
+ 				if (p1 == already_sorted) {
+ 					while (p2 < num_buffered) buffer[p3++] = buffer[p2++];
+@@ -3836,7 +3833,7 @@
+ 	long bits_per_sample = std::floor(3 * log2_of_buffer_size - 2);
+ 	if (bits_per_sample > bits_to_use) issue_error();
+ 	//const Uint64 effective_buffer_size = 1ull << effective_bufsize_L2;
+-	Uint64 high_mask = 0xFFffFFffFFffFFffull, low_mask;
++	Uint64 high_mask = 0xFFffFFffFFffFFffull, low_mask = 0;
+ 	if (bits_per_sample == 128) low_mask = high_mask;
+ 	else if (bits_per_sample > 64) low_mask = high_mask << (128 - bits_per_sample);
+ 	else if (bits_per_sample == 64) low_mask = 0;
+@@ -4054,7 +4051,7 @@
+ 		{ 0, 0, 0 },//30
+ 		{ 0, 0, 0 },//31
+ 	};
+-	long double offset, dev, samples;
++	long double offset, dev, samples; (void)offset; (void)dev; (void)samples;
+ 	if (_offset) {
+ 		if (table[table_size_L2].mean > 0) *_offset = table[table_size_L2].mean;
+ 		else ;
+@@ -4065,8 +4062,8 @@
+ 
+ void PractRand::Tests::BirthdayAlt::get_results(std::vector<TestResult> &results) {
+ 	if (!count) return;
+-	long buffer_size = 1 << buffer_size_L2;
+-	long double dev, _sample_size, uncertainty;
++	long buffer_size = 1 << buffer_size_L2; (void)buffer_size;
++	long double dev, _sample_size, uncertainty; (void)uncertainty;
+ 	_lookup_constants(buffer_size_L2, NULL, &dev, &_sample_size);
+ 
+ 	double score = score_sum_log / std::sqrt(double(count)) / dev;
+@@ -4081,7 +4078,7 @@
+ 	BirthdayHelpers::_sorted_deltas_of_sorted_values(buffer, buffer_size_L2, sort_helper_counts);
+ 	for (int i = 0; i < (1 << SORT_HELPER_BITS); i++) sort_helper_counts[i] = 0;
+ 
+-	long double expected_log_offset, expected_log_samples, deviation, uncertainty;
++	long double expected_log_offset, expected_log_samples, deviation, uncertainty; (void)uncertainty;
+ 	_lookup_constants(buffer_size_L2, &expected_log_offset, &deviation, &expected_log_samples);
+ 
+ 	long double sum_log = 0, sum_log2 = 0;
+@@ -4116,7 +4113,7 @@
+ 			long double old;
+ 			_lookup_constants(i, &old, NULL, NULL);
+ 			Uint64 bufsize = 1ull << i;
+-			long double preadj = std::pow(2.0, 128.0 - i) / (bufsize - 1);
++			long double preadj = std::pow(2.0, 128.0 - i) / (bufsize - 1); (void)preadj;
+ 			//long double revised = ;
+ 		}
+ 	}
+@@ -4429,7 +4426,7 @@
+ 		next_younger_sym[youngest_sym] = Uint8(sym);
+ 		youngest_sym = sym;
+ 	}
+-	Uint64 oblocks = blocks_tested;
++	Uint64 oblocks = blocks_tested; (void)oblocks;
+ 	blocks_tested += numblocks;
+ //	if ((oblocks>>17) != (blocks_tested>>17)) {//once every 128 megabytes or so... prevent overflow
+ //		for (i = 0; i < 256; i++) {
+@@ -4678,9 +4675,9 @@
+ int  PractRand::Tests::NearSeq::get_extra_distance(const Word *core, int bucket_index) const {
+ 	typedef int(*CBFUNC)(Word);
+ 	CBFUNC _count_ones = (WORD_BITS == 64) ? (CBFUNC)count_ones64 : ((WORD_BITS == 32) ? (CBFUNC)count_ones32 : ((WORD_BITS == 16) ? (CBFUNC)count_ones16 : NULL));// ((WORD_BITS == 8) ? counts_bits8 : NULL)));
+-	int bits_left = CORE_SEQUENCE_BITS;
++	int bits_left = CORE_SEQUENCE_BITS; (void)bits_left;
+ 	int extra_distance = 0;
+-	int pos = 0;
++	int pos = 0; (void)pos;
+ 	//early words
+ 	for (int i = 0; i < SEQUENCE_WORD_OFFSET; i++) extra_distance += _count_ones(core[i - SEQUENCE_WORD_OFFSET] ^ buckets[bucket_index].sequence[i]);
+ 	if (CORE_SEQUENCE_BITS % WORD_BITS) {
+@@ -4810,8 +4807,6 @@
+ 	//_total_cores = 0;
+ 	//_total_valid_cores = 0;
+ 	//_total_invalid_cores = 0;
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 	if (!lookup_table1) {
+ 		lookup_table3 = new Uint8[MAX_TOTAL_HDIST + 1];
+ 		for (int i = 0; i <= MAX_TOTAL_HDIST; i++) {
+@@ -4866,7 +4861,6 @@
+ 			}
+ 		}
+ 	}
+-#pragma GCC diagnostic pop
+ 	for (int i = 0; i < NUM_BUCKETS; i++) buckets[i].reset();
+ 	TestBaseclass::init(known_good);
+ }
+@@ -4892,18 +4886,13 @@
+ 	Sint8 is_bad = 0;
+ 	for (int i = 0; i < WORD_BITS / BITS_PER_BLOCK; i++) {
+ 		Word block = word;
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 		if (BITS_PER_BLOCK < WORD_BITS) block &= Word((1ull << BITS_PER_BLOCK) - 1);
+ 		if (BITS_PER_BLOCK * 2 <= WORD_BITS) word >>= BITS_PER_BLOCK;
+-#pragma GCC diagnostic pop
+ 		is_bad |= lookup1(block);
+ 	}
+ 	return is_bad < 0;
+ }
+ bool PractRand::Tests::NearSeq2::is_core_bad(const Word *core) const {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 	Sint8 is_bad = 0;
+ 	if (CORE_WORDS == 1) {
+ 		Word w = core[0];
+@@ -4992,11 +4981,8 @@
+ 		if (is_bad < 0) return true;
+ 		else return false;
+ 	}
+-#pragma GCC diagnostic pop
+ }
+ void PractRand::Tests::NearSeq2::core_analysis(const Word *core, int &index, int &ham) const {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 	long core_bucket = 0;
+ 	long bucket_bit = 0;
+ 	long h = 0;
+@@ -5079,7 +5065,6 @@
+ 	}
+ 	index = core_bucket;
+ 	ham = h;
+-#pragma GCC diagnostic pop
+ }
+ int PractRand::Tests::NearSeq2::get_hdist_bin(int hdist) const {
+ 	// some parameterizations have a wide variety of possible total core hamming weights
+@@ -5128,12 +5113,12 @@
+ 
+ 		Uint64 counts[2] = { total_invalid_cores, total_valid_cores };
+ 		double probs[2] = { 1 - prob_of_valid_core, prob_of_valid_core };
+-		double raw1 = cores_valid.get_result();
++		double raw1 = cores_valid.get_result(); (void)raw1;
+ 		double raw2 = g_test(2, probs, counts);
+ 		double n1 = math_chisquared_to_normal(cores_valid.get_result(), cores_valid.get_DoF());
+-		double n2 = math_chisquared_to_normal(raw2, 1);
++		double n2 = math_chisquared_to_normal(raw2, 1); (void)n2;
+ 		double p1 = math_chisquared_to_pvalue(cores_valid.get_result(), cores_valid.get_DoF());
+-		double p2 = math_chisquared_to_pvalue(raw2, 1);
++		double p2 = math_chisquared_to_pvalue(raw2, 1); (void)p2;
+ 
+ 		std::ostringstream os;
+ 		os << get_name() << ":valid1";
+@@ -5269,7 +5254,7 @@
+ 					chi_squared_DoF += 1;
+ 					double raw = buckets[bi].extra_counts[hb][eb] - 0.5 * sum_counts;
+ 					double n = raw / std::sqrt(0.25 * sum_counts);
+-					double p = math_normaldist_to_pvalue(n);
++					double p = math_normaldist_to_pvalue(n); (void)p;
+ 					if (n < low.n) {
+ 						low.n = n;
+ 						low.bucket = bi;
+@@ -5414,10 +5399,7 @@
+ 				extra_pos += WORD_BITS;
+ 			}
+ 			if (EXTRA1_PARTIAL_WORD_BITS) {
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Wshift-count-overflow"
+ 				count_ones_distribution(core[CORE_WORDS - 1] >> (WORD_BITS - EXTRA1_PARTIAL_WORD_BITS), extra_pos, EXTRA1_PARTIAL_WORD_BITS);
+-#pragma GCC diagnostic pop
+ 			}
+ 		}
+ 	}
+@@ -5517,7 +5499,7 @@
+ 		// basic callibration of basic scoring
+ 		double mean = 0;
+ 		double mean_sqr = 0;
+-		double sum_p = 0;
++		double sum_p = 0; (void)sum_p;
+ 		for (long i = 0; i <= midpoint; i++) {
+ 			double p = pdf[i];
+ 			double score = p ? _basic_hw_scoring_function(pdf, cdf, i) : 0;
+@@ -5540,7 +5522,7 @@
+ 		// basic callibration of double-width scoring
+ 		double dw_mean = 0;
+ 		double dw_mean_sqr = 0;
+-		double dw_sum_p = 0;
++		double dw_sum_p = 0; (void)dw_sum_p;
+ 		long dw_midpoint = midpoint * 2;
+ 		for (long i = 0; i <= dw_midpoint; i++) {
+ 			double p = dw_pdf[i];
+@@ -5592,7 +5574,7 @@
+ 		// the more complicated case of core HW scoring
+ 		double biased_mean = 0;
+ 		double biased_mean_sqr = 0;
+-		double biased_sum_p = 0;
++		double biased_sum_p = 0; (void)biased_sum_p;
+ 		//double threshold_cdf = cdf[threshold];
+ 		double threshold_cdf_inv = 1.0 / (cdf[threshold] - filter_rate);
+ 		for (long i = filter_threshold + 1; i <= threshold; i++) {
+@@ -5645,7 +5627,7 @@
+ 				for (long i3 = 0; i3 < block_size; i3++) dist_post += count_ones_(raw_post[base_pos + i3] ^ raw_post[base_pos2 + i3]);
+ 				for (long i3 = 0; i3 < block_size; i3++) dist_core += count_ones_(raw_core[base_pos + i3] ^ raw_core[base_pos2 + i3]);
+ 				long dist_both = dist_pre + dist_post;
+-				long dist_all = dist_both + dist_core;
++				long dist_all = dist_both + dist_core; (void)dist_all;
+ 
+ 				score_pd_pre += _basic_hw_scoring_function(pdf, cdf, dist_pre) - mean;
+ 				score_pd_post += _basic_hw_scoring_function(pdf, cdf, dist_post) - mean;
+@@ -5778,11 +5760,8 @@
+ 	//Uint64 margin_needed = 
+ 
+ 	enum { HALF_BLOCK = TestBlock::SIZE / sizeof(Word) / 2 };
+-#pragma GCC diagnostic push
+-#pragma GCC diagnostic ignored "-Warray-bounds"
+-	Word *p = &data[0].as64[blocks_tested ? -HALF_BLOCK : HALF_BLOCK];
+-	Word *end = &data[numblocks].as64[-HALF_BLOCK];
+-#pragma GCC diagnostic pop
++	Word *p = reinterpret_cast<Word *>(data) + (blocks_tested ? -HALF_BLOCK : HALF_BLOCK);
++	Word *end = reinterpret_cast<Word *>(data + numblocks) - HALF_BLOCK;
+ 	blocks_tested += numblocks;
+ 
+ 	if (p >= end) return;
+@@ -5862,12 +5841,12 @@
+ 		}
+ 		else {*/
+ 		if (true) {//all modes  should now use this, right?
+-			double score_hw_pre = 0;
++			double score_hw_pre = 0; (void)score_hw_pre;
+ 			double score_hw_core = 0;
+ 			double score_hw_both = 0;
+-			double score_hw_post = 0;
+-			double score_pd_pre = 0;
+-			double score_pd_post = 0;
++			double score_hw_post = 0; (void)score_hw_post;
++			double score_pd_pre = 0; (void)score_pd_pre;
++			double score_pd_post = 0; (void)score_pd_post;
+ 			//double score_pd_core = 0;
+ 			double score_pd_both = 0;
+ 			double hw_variance = 0;
+@@ -5903,7 +5882,7 @@
+ 				double chances = (blocks_tested - 1) * (1024.0 / sizeof(Word)) * std::pow(0.5, si);
+ 				double e = cdf[psd.threshold] * chances;
+ 				double o = psd.count;
+-				double n = (o - e) / std::sqrt(e) / 2;
++				double n = (o - e) / std::sqrt(e) / 2; (void)n;
+ 				//results.push_back(TestResult("NS3[" + sis + ":f]", n, math_normaldist_to_suspicion(n), TestResult::TYPE_BAD_S, 0.5 / (1.0 + si)));
+ 				//results.push_back(TestResult("NS3[" + sis + ":f]" + "{" + std::to_string(psd.count) + "/" + std::to_string(long(e)) + "}", n, math_normaldist_to_suspicion(n), TestResult::TYPE_BAD_S, 0.5 / (1.0 + si)));
+ 			}
+@@ -5945,7 +5924,8 @@
+ 
+ void PractRand::Tests::LHWSCN::sample_to_counts(unsigned long level, Word *sample, long *counts) {
+ 	const unsigned long N = 1 << level;
+-	Uint8 __assert_wordsize__[sizeof(Word) == 8*sizeof(Uint8) ? 1 : -1]; //this code assumes that Word is 64 bits atm
++	Uint8 __assert_wordsize__[sizeof(Word) == 8*sizeof(Uint8) ? 1 : -1]; (void)__assert_wordsize__; //this code assumes that Word is 64 bits atm
++
+ 	const Uint64 xc[6] = { 0x5555555555555555ull, 0x3333333333333333ull, 0x0F0F0F0F0F0F0F0Full, 0x00FF00FF00FF00FFull, 0x0000FFFF0000FFFFull, 0x00000000FFFFFFFFull };
+ 	Uint8 hw[1 << MAX_LEVELS];
+ 	long thw = 0;
+@@ -6007,7 +5987,7 @@
+ 
+ 		long bits_L2 = word_L2 + i;
+ 		long bits = 1 << bits_L2;
+-		long bits_var;
++		long bits_var = 0;
+ 		if (bits_L2 < 6) issue_error("LHWSCN::init - level too low");
+ 		else bits_var = ((bits_L2 & 1) ? 17 : 12) << ((i - 6) >> 1);
+ 		//		6		7		8		9		10		11		12		13		14		15		16		17		18		19		20
+@@ -6090,10 +6070,10 @@
+ 	const Uint64 *count = counts.get_array();
+ 	const double expected_mean = 41426.652943388356 - 1 + 0.185;// plus or minus about 0.001?... actually the value I got empirically was 0.184979, but it 0.185 was so close and so much prettier
+ 	const double expected_deviation = 79.81665;// plus or minus about 0.001? - these valuse were obtained from a 1280 TB test run
+-	double eebar = 0.001;
++	double eebar = 0.001; (void)eebar;
+ 
+-	double total_error = 0;
+-	double weighted_error = 0;
++	double total_error = 0; (void)total_error;
++	double weighted_error = 0; (void)weighted_error;
+ 	double inv_dev = 1.0 / expected_deviation;
+ 	double total = blocks_tested / 128;
+ 	if (total < 1) return;
+@@ -6113,7 +6093,7 @@
+ 		double p = math_normaldist_pdf((ei - expected_mean) * inv_dev) * inv_dev;
+ 		probs[i] = p;
+ 		double error = std::fabs(f - p);
+-		double weight = -std::log(p);
++		double weight = -std::log(p); (void)weight;
+ 		total_error += error;
+ 		weighted_error -= error * std::log(p);
+ 	}
+@@ -6176,12 +6156,12 @@
+ 	return "Coup32";
+ }
+ void PractRand::Tests::Coup32::handle_set_completion(Uint64 position) {
+-	Uint64 distance = position - set_start_position;
++	Uint64 distance = position - set_start_position; (void)distance;
+ 	set_start_position = position;
+ 	num_complete_sets += 1;
+ 	filled_words = 0;
+ 	double N = std::pow(2.0, COUPON_BITS);
+-	double expected_distance = N * std::log(N);
++	double expected_distance = N * std::log(N); (void)expected_distance;
+ 	// todo: needs more scoring here
+ }
+ void PractRand::Tests::Coup32::test_blocks(TestBlock *data, int numblocks) {
+@@ -6856,14 +6836,14 @@
+ }
+ std::string PractRand::Tests::SimpleClassifyWord::get_name() const { return "SCW"; }
+ void PractRand::Tests::SimpleClassifyWord::get_results(std::vector<TestResult> &results) {
+-	double expected_total = blocks_tested * (TestBlock::SIZE / 2) - (OVERLAP_WINDOW - 1);
++	double expected_total = blocks_tested * (TestBlock::SIZE / 2) - (OVERLAP_WINDOW - 1); (void)expected_total;
+ 	std::vector<double> probs;
+ 	probs.resize(1 << TOTAL_BITS);
+ 	std::vector<Uint64> tmp_counts;
+ 	tmp_counts.resize(1 << TOTAL_BITS);
+ 	counts.flush();
+ 	Uint64 tsize = 1ull << TOTAL_BITS;
+-	Uint64 observed_total = 0;
++	Uint64 observed_total = 0; (void)observed_total;
+ 	for (int i = 0; i < tsize; i++) {
+ 		double p = 1.0;
+ 		enum { SINGLE_CODE_MASK = (1 << CODE_BITS) - 1 };
+@@ -7817,17 +7797,17 @@
+ 	int perms_per_block = !passes_at_once ? (8 * TestBlock::SIZE / word_bits / 16) : passes_at_once;
+ 	if (blocks_tested * perms_per_block / (blocks_per_pass ? blocks_per_pass : 1) < LPERM_BUCKETS * 32) return;
+ 	if (blocks_tested >= 1ull << 39) return;// believed to produce false positives when test length approachs 2**50 bytes
+-	const int fact4 = 24;
++	const int fact4 = 24; (void)fact4;
+ 	const int fact8 = 40320;
+ 	//double lperm4_chances[8] = { 2 / 24., 4 / 24., 2 / 24., 4 / 24., 4 / 24., 2 / 24., 4 / 24., 2 / 24. };
+ 	double lperm4_chances[8] = { 3 / 24., 5 / 24., 1 / 24., 3 / 24., 3 / 24., 1 / 24., 5 / 24., 3 / 24. };
+ 	int lperm4_greaterthan[8] = { 0, 0, 1, 1, 1, 2, 2, 3 };
+ 	int lperm4_lessthan[8] = { 3, 2, 2, 1, 1, 1, 0, 0 };
+-	int lperm4_incomparable[8] = { 0, 1, 0, 1, 1, 0, 1, 0 };
++	int lperm4_incomparable[8] = { 0, 1, 0, 1, 1, 0, 1, 0 }; (void)lperm4_incomparable;
+ 	double lperm8_chances[128];
+-	int lperm8_greaterthan[128];
+-	int lperm8_lessthan[128];
+-	int lperm8_incomparable[128];
++	int lperm8_greaterthan[128]; (void)lperm8_greaterthan;
++	int lperm8_lessthan[128]; (void)lperm8_lessthan;
++	int lperm8_incomparable[128]; (void)lperm8_incomparable;
+ 	for (int i = 0; i < 128; i++) lperm8_chances[i] = 0;
+ 	for (int i = 0; i < fact8; i++) {
+ 		Uint8 rawperm[8];
+@@ -7867,9 +7847,9 @@
+ 		if (actual_chance - chance > 0.0000001) {
+ 			issue_error("chances don't add up");
+ 		}
+-		double observed_ratio = lperm8_chances[i] / chance;
+-		int low_odds = lperm4_greaterthan[low] - lperm4_lessthan[low];
+-		int high_odds = lperm4_greaterthan[high] - lperm4_lessthan[high];
++		double observed_ratio = lperm8_chances[i] / chance; (void)observed_ratio;
++		int low_odds = lperm4_greaterthan[low] - lperm4_lessthan[low]; (void)low_odds;
++		int high_odds = lperm4_greaterthan[high] - lperm4_lessthan[high]; (void)high_odds;
+ 		lperm8_greaterthan[i] = which ? lperm4_greaterthan[high] : lperm4_greaterthan[high] + lperm4_greaterthan[low] + 1;
+ 		lperm8_lessthan[i] = which ? lperm4_lessthan[high] + lperm4_lessthan[low] + 1 : lperm4_lessthan[high];
+ 		//if (!which) PractRand::Internals::no_printf("%3d (%d:%d): %.5f %d\n", i, low, high, observed_ratio, high_odds - low_odds);
+@@ -8037,17 +8017,17 @@
+ void PractRand::Tests::LPerm16A::get_results(std::vector<TestResult> &results) {
+ 	int perms_per_block = !passes_at_once ? (8 * TestBlock::SIZE / word_bits / 16) : passes_at_once;
+ 	if (blocks_tested * perms_per_block / (blocks_per_pass ? blocks_per_pass : 1) < LPERM_BUCKETS * 32) return;
+-	const int fact4 = 24;
++	const int fact4 = 24; (void)fact4;
+ 	const int fact8 = 40320;
+ 	//double lperm4_chances[8] = { 2 / 24., 4 / 24., 2 / 24., 4 / 24., 4 / 24., 2 / 24., 4 / 24., 2 / 24. };
+ 	double lperm4_chances[8] = { 3 / 24., 5 / 24., 1 / 24., 3 / 24., 3 / 24., 1 / 24., 5 / 24., 3 / 24. };
+ 	int lperm4_greaterthan[8] = { 0, 0, 1, 1, 1, 2, 2, 3 };
+ 	int lperm4_lessthan[8] = { 3, 2, 2, 1, 1, 1, 0, 0 };
+-	int lperm4_incomparable[8] = { 0, 1, 0, 1, 1, 0, 1, 0 };
++	int lperm4_incomparable[8] = { 0, 1, 0, 1, 1, 0, 1, 0 }; (void)lperm4_incomparable;
+ 	double lperm8_chances[128];
+-	int lperm8_greaterthan[128];
+-	int lperm8_lessthan[128];
+-	int lperm8_incomparable[128];
++	int lperm8_greaterthan[128]; (void)lperm8_greaterthan;
++	int lperm8_lessthan[128]; (void)lperm8_lessthan;
++	int lperm8_incomparable[128]; (void)lperm8_incomparable;
+ 	for (int i = 0; i < 128; i++) lperm8_chances[i] = 0;
+ 	for (int i = 0; i < fact8; i++) {
+ 		Uint8 rawperm[8];
+@@ -8087,9 +8067,9 @@
+ 		if (actual_chance - chance > 0.0000001) {
+ 			issue_error("chances don't add up");
+ 		}
+-		double observed_ratio = lperm8_chances[i] / chance;
+-		int low_odds = lperm4_greaterthan[low] - lperm4_lessthan[low];
+-		int high_odds = lperm4_greaterthan[high] - lperm4_lessthan[high];
++		double observed_ratio = lperm8_chances[i] / chance; (void)observed_ratio;
++		int low_odds = lperm4_greaterthan[low] - lperm4_lessthan[low]; (void)low_odds;
++		int high_odds = lperm4_greaterthan[high] - lperm4_lessthan[high]; (void)high_odds;
+ 		lperm8_greaterthan[i] = which ? lperm4_greaterthan[high] : lperm4_greaterthan[high] + lperm4_greaterthan[low] + 1;
+ 		lperm8_lessthan[i] = which ? lperm4_lessthan[high] + lperm4_lessthan[low] + 1 : lperm4_lessthan[high];
+ 	}
+diff -ruN a/src/xbg_helpers.cpp b/src/xbg_helpers.cpp
+--- a/src/xbg_helpers.cpp
++++ b/src/xbg_helpers.cpp
+@@ -1045,7 +1045,7 @@
+ 							while (y < h && !bit_read(x, y)) y++;//it's now safe to search past virtual_h, because the buffer is clear
+ 						}
+ 						if (y != h) {
+-							long rfww = ranks_found * ww;
++							long rfww = ranks_found * ww; (void)rfww;
+ 							xor_rows_skip_start(ranks_found, y, shortened);
+ 							//for (long i = shortened; i < ww; i++) base[rfww+i] ^= base[y*ww+i];
+ 							xor_rows_skip_start(y, ranks_found, shortened);
+@@ -1069,7 +1069,7 @@
+ 					for (int x = 0; x < rv.w; x++) {
+ 						bool r = false;
+ 						for (int k = 0; k < this->w; k++) {
+-							r ^= bit_read(x, k) & other.bit_read(k, y);
++							r ^= bit_read(x, k) && other.bit_read(k, y);
+ 						}
+ 						rv.bit_write(x, y, r);
+ 					}
+@@ -1124,7 +1124,7 @@
+ 					INTERFACE_WORD_BITS = sizeof(OutWord)* 8,
+ 					INTERFACE_WORD_BITS_L2 = 6
+ 				};
+-				typedef char _compiletime_assert_bitmatrix_mulvec[((1 << INTERFACE_WORD_BITS_L2) == INTERFACE_WORD_BITS && sizeof(OutWord) == sizeof(*in)) ? 1 : -1];
++				typedef char _compiletime_assert_bitmatrix_mulvec[((1 << INTERFACE_WORD_BITS_L2) == INTERFACE_WORD_BITS && sizeof(OutWord) == sizeof(*in)) ? 1 : -1]; (void)sizeof(_compiletime_assert_bitmatrix_mulvec);
+ 				unsigned int hw = (length_in_bits + (INTERFACE_WORD_BITS - 1)) >> INTERFACE_WORD_BITS_L2;
+ 				for (int y = 0; y < hw; y++) out[y] = 0;
+ 				for (int y = 0; y < length_in_bits; y++) {
+@@ -1140,7 +1140,7 @@
+ 					INTERFACE_WORD_BITS = sizeof(OutWord)* 8,
+ 					INTERFACE_WORD_BITS_L2 = 5
+ 				};
+-				typedef char _compiletime_assert_bitmatrix_mulvec[((1 << INTERFACE_WORD_BITS_L2) == INTERFACE_WORD_BITS && sizeof(OutWord) == sizeof(*in)) ? 1 : -1];
++				typedef char _compiletime_assert_bitmatrix_mulvec[((1 << INTERFACE_WORD_BITS_L2) == INTERFACE_WORD_BITS && sizeof(OutWord) == sizeof(*in)) ? 1 : -1]; (void)sizeof(_compiletime_assert_bitmatrix_mulvec);
+ 				unsigned int hw = (length_in_bits + (INTERFACE_WORD_BITS - 1)) >> INTERFACE_WORD_BITS_L2;
+ 				for (int y = 0; y < hw; y++) out[y] = 0;
+ 				for (int y = 0; y < length_in_bits; y++) {
+@@ -1156,7 +1156,7 @@
+ 					INTERFACE_WORD_BITS = sizeof(OutWord)* 8,
+ 					INTERFACE_WORD_BITS_L2 = 4
+ 				};
+-				typedef char _compiletime_assert_bitmatrix_mulvec[((1 << INTERFACE_WORD_BITS_L2) == INTERFACE_WORD_BITS && sizeof(OutWord) == sizeof(*in)) ? 1 : -1];
++				typedef char _compiletime_assert_bitmatrix_mulvec[((1 << INTERFACE_WORD_BITS_L2) == INTERFACE_WORD_BITS && sizeof(OutWord) == sizeof(*in)) ? 1 : -1]; (void)sizeof(_compiletime_assert_bitmatrix_mulvec);
+ 				unsigned int hw = (length_in_bits + (INTERFACE_WORD_BITS - 1)) >> INTERFACE_WORD_BITS_L2;
+ 				for (int y = 0; y < hw; y++) out[y] = 0;
+ 				for (int y = 0; y < length_in_bits; y++) {

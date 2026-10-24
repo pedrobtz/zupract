@@ -1,0 +1,105 @@
+Vendored dependency: PractRand, by Chris Doty-Humphrey
+
+  Upstream:      https://sourceforge.net/projects/pracrand/
+  Version:       0.96
+  Archive:       https://sourceforge.net/projects/pracrand/files/PractRand_0.96.zip/download
+  SHA-256:       e4caf7fda98b2c597bbda3b576753cf5a0f6047aab837c82be370ab798a672e1
+  Released:      2025-12-26
+  Imported:      2026-10-24
+  License:       public domain, with the CC0 1.0 dedication as fallback
+                 (src/practrand/LICENSE, doc/license.txt upstream)
+  Local patches: applied in this order, from tools/patches/
+                 0001-no-stdio.patch
+                 0002-cran-warnings.patch
+                 0003-portability.patch
+                 0004-calibration-leak.patch
+
+src/practrand/ is tools/vendor/derive's output: upstream's include/ and src/
+trees without RNGs/other/, and doc/license.txt as LICENSE, with line endings
+normalised from CRLF to LF, then exactly the patches above applied.
+tools/vendor/verify re-derives the tree from the pinned archive and fails on
+any other difference.
+
+Only the library is imported. tools/ (RNG_test, TestManager.h and the other
+command-line programs), doc/ and VisualC_net/ are left out; TestManager.h
+and RNG_test.cpp are the reference for the package's own driver. The
+"NotRecommended" generators in include/PractRand/RNGs/other/ and
+src/RNGs/other/ are left out as well: upstream's licence notes that some
+were copied from web pages, forum posts and papers, with no licence stated,
+and nothing else in the library includes or links them. The other 21
+translation units are compiled: rand.cpp needs the seeding code, the
+recommended RNGs and non_uniform.cpp.
+
+Upstream is the SourceForge project. Version 0.96 (2025-12-26) is newer than
+every fork found on GitHub on 2026-10-23 (MartyMacGyver/PractRand,
+rurban/PractRand, tylov-fork/PractRand, all at 0.94 or the 2019 pre-0.95
+snapshot, none updated since 2022), so the release is vendored rather than a
+fork. SourceForge publishes no checksum; the SHA-256 above was computed at
+import and is re-checked by tools/vendor/verify (trust on first use).
+
+0001-no-stdio.patch removes everything the library could write to stdout or
+stderr, and every exit(), which R CMD check forbids in compiled code even
+when unreachable. Every std::printf call, nearly all in calibration and
+debugging code, goes to PractRand::Internals::no_printf(), a no-op declared
+in config.h. issue_error() throws std::runtime_error instead of printing and
+calling exit(1) when no handler is hooked, and the three exit() calls in
+tests_core.cpp and tests_other.cpp call issue_error() instead. The patch is
+mechanical; tools/vendor/make-no-stdio-patch regenerates it from the
+pristine tree.
+
+0002-cran-warnings.patch makes the library compile without a significant
+warning under CRAN's gcc and clang flags (-Wall -pedantic), as R CMD check
+judges them, and without the diagnostic-suppressing pragmas R CMD check
+warns about. Measured 2026-10-24 with GCC 15 and Apple clang 17: about 150
+significant warnings each before, none after. The edits change no
+behaviour, with one exception:
+
+  - unused locals and typedef asserts are marked used with (void)name; or
+    (void)sizeof(name); on the declaring line, never deleted;
+  - dead static functions and tables are marked [[gnu::unused]];
+  - constructor initialiser lists are written in declaration order, which
+    is the order C++ initialises members in anyway (-Wreorder);
+  - the unsigned __int128 convenience wrappers are compiled out with
+    PRACTRAND_NO_INT128 in config.h; nothing in the library calls them;
+  - reads of the repeated blocks before `data` (as32[-1], as64[-n]) go
+    through a pointer cast instead of a negative array index, the same
+    access without -Warray-bounds;
+  - two variables that are only unset on a path that ends in issue_error()
+    are initialised to 0, and mrsf32 writes ~Uint32(0) instead of ~0ull;
+  - the exception: tests_other.cpp read `ored` uninitialised in a
+    function that returns (ored >> BITS) == 0; it now starts at 0. That
+    is an upstream bug, and the result was undefined before.
+
+The template shifts by BITS_PER_BLOCK in NearSeq that the pragmas hid
+(-Wshift-count-overflow) still warn; they are not significant to R CMD
+check. 0002 is hand-made: on an update, apply it to the new tree, fix what
+no longer applies, and regenerate it with diff -ruN against the tree with
+0001 alone (tools/vendor/derive with only 0001 listed).
+
+0003-portability.patch, also hand-made, covers what 0002 missed because it
+was measured as C++17 on x86_64 against R 4.5.2's list of significant
+warnings. R-devel's list adds C++20 deprecations, R now compiles packages
+as C++20 by default, and CRAN's macOS builds are arm64:
+
+  - platform_specifics.cpp includes <x86intrin.h> and calls __rdtsc() for
+    any GNU compiler; both are now limited to x86, and the fallback, which
+    returned a clock object rather than a count, returns the count;
+  - arithmetic between enumerators of different anonymous enums, or between
+    an enumerator and a double, is deprecated in C++20; on each such line
+    the enumerators get a unary +, which promotes them to their integer
+    type without changing the value;
+  - three more reads of the blocks before `data` go through a pointer cast,
+    as in 0002, for GCC's -Warray-bounds at C++20.
+
+Measured 2026-10-24 against R-devel's src/library/tools/R/check.R, with
+GCC 15 (C++17 and C++20) and Apple clang 17 (C++17; C++20 for x86_64 and
+arm64): no significant warnings. Regenerate 0003 against the tree with 0001
+and 0002 applied.
+
+0004-calibration-leak.patch fixes an upstream leak found by valgrind in CI
+(2026-10-24): the static calibration_manager in tests_core.cpp is built
+when the library loads, and its calibration tables list 28 (test, length)
+entries twice. Each duplicate overwrote the pointer to the first copy and
+leaked it (2,240 bytes directly, 32,928 with what it owns). The
+constructor now frees the earlier entry before storing the later one, so
+the later entry still wins, as before.

@@ -5,3 +5,7 @@ test_that("zurngtest_info() describes the package", {
   expect_equal(info$version, unname(getNamespaceVersion("zurngtest")))
   expect_equal(info$batteries, c("core", "expanded"))
 })
+
+test_that("zurngtest_info() reports the vendored PractRand version", {
+  expect_equal(zurngtest_info()$practrand, "0.96")
+})
