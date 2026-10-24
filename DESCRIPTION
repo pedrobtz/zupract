@@ -23,6 +23,8 @@ URL: https://pedrobtz.github.io/zurngtest/,
 BugReports: https://github.com/pedrobtz/zurngtest/issues
 Depends:
     R (>= 4.1)
+Imports:
+    stats
 Suggests:
     testthat (>= 3.0.0),
     withr

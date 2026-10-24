@@ -2,7 +2,7 @@
 # overrides, each of which costs a CRAN rejection or a GNU make requirement.
 
 # PractRand's headers are included as "PractRand/...", from its include/.
-PKG_CPPFLAGS = -Ipractrand/include
+PKG_CPPFLAGS = -Ipractrand/include -I../inst/include
 
 # Hidden visibility for every object, the vendored ones included: the only
 # symbol the shared library exports is R_init_zurngtest, marked visible in
@@ -13,6 +13,7 @@ PKG_CXXFLAGS = $(CXX_VISIBILITY)
 # The 21 translation units of the vendored library; see
 # practrand/PROVENANCE for what is left out and why.
 PRACTRAND_OBJECTS = \
+	callable.o \
 	practrand/src/math.o \
 	practrand/src/non_uniform.o \
 	practrand/src/platform_specifics.o \
