@@ -21,12 +21,13 @@ questions (the name, which PractRand upstream, TestU01) are still open.
 
 ## Current state
 
-Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 4)
+Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 5)
 `pract_test()` runs PractRand 0.96's core and expanded batteries over
 `pract_raw()`, `pract_fun()`, `pract_rng()` and `pract_interleave()` sources,
 and C code reaches it through `zurngtest_test_cfun()`. Its results equal
-`RNG_test`'s on the same bytes; documentation and a `zurand` vignette (Stage
-5) are next. The roadmap in
+`RNG_test`'s on the same bytes, and the package has a README, an article and
+full reference documentation. The full-CI stage (Stage 6) is next; zurand
+must reach CRAN before submission (roadmap, Stage 5). The roadmap in
 `.agents/roadmap.md` takes it to v0.1.0.
 
 ## Stage tracking

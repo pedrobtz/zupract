@@ -19,7 +19,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 | 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | [#39](https://github.com/pedrobtz/zurngtest/pull/39) | 2026-10-24 |
 | 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | [#40](https://github.com/pedrobtz/zurngtest/pull/40) | 2026-10-24 |
 | 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | [#41](https://github.com/pedrobtz/zurngtest/pull/41) | 2026-10-24 |
-| 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zurngtest/issues/7) | | |
+| 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zurngtest/issues/7) | | 2026-10-24 |
 | 6 | [Full CI](#stage-6--full-ci) | full | [#8](https://github.com/pedrobtz/zurngtest/issues/8) | | |
 | 7 | [v0.1.0 readiness](#stage-7--v010-readiness) | full | [#9](https://github.com/pedrobtz/zurngtest/issues/9) | | |
 
@@ -361,6 +361,25 @@ C callable in a test.
 - The vignette builds with and without `zurand` installed.
 - The `zurand` pull request is merged, or recorded here as blocked with a
   reason.
+
+**Deviations and status** (2026-10-24).
+
+- The vignette tests zurand from R, through `pract_fun()` and
+  `rng_bits()`, and shows the C callable as code that is not run: a zurand
+  stream can reach the callable only from zurand's own C code, which is
+  what the zurand pull request adds.
+- The zurand pull request,
+  [pedrobtz/zurand#65](https://github.com/pedrobtz/zurand/pull/65), is open
+  for review. It adds a fixture package built against `zurand.h` and
+  `zurngtest.h` and a test that runs one stream per engine through
+  `zurngtest_test_cfun()`; all three pass to 16 MiB. It does not add
+  zurngtest to zurand's `DESCRIPTION`, since zurand goes to CRAN first, so
+  the test skips where zurngtest is not installed, including zurand's CI.
+- zurand is in `Suggests` with `Remotes: pedrobtz/zurand`, since it is not
+  on CRAN yet. **Before Stage 7 submits, zurand must be on CRAN, or leave
+  `Suggests`;** CRAN does not accept a suggested package it cannot install.
+- `print()` printed every result line after the first with an extra
+  leading space; fixed, with a test.
 
 **Design.** §3 (relationships); acceptance criterion 4.
 
