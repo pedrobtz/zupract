@@ -160,6 +160,9 @@ doubling lengths over raw bytes and R-function sources, and returns a
   to the last completed length.
 - `zurngtest_source_error` for a wrong type or length from `pract_fun()` and
   a connection that ends early.
+- Every `.Call` entry point catches the `std::runtime_error` PractRand's
+  `issue_error()` throws (patch 0001) and signals
+  `zurngtest_internal_error`; a test reaches that path through `.Call`.
 
 **Exit criteria.**
 
