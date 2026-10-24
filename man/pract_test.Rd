@@ -47,10 +47,32 @@ doubling lengths from \code{min_bytes} to \code{max_bytes}, as 'PractRand''s
 }
 \details{
 Each test result is evaluated with 'PractRand''s own labels and
-thresholds, from "normal" through "unusual" and "suspicious" to "FAIL",
-which may carry up to eight exclamation marks for the most extreme
-failures. A source has failed at the first length with any result
-labelled "FAIL".
+thresholds, as its \code{RNG_test} evaluates them; see the Evaluations section.
+A source has failed at the first length with any result labelled "FAIL".
+}
+\section{Evaluations}{
+
+'PractRand' scores each result in decimal digits: about
+\eqn{\log_{10}(1/p)} for its p-value \eqn{p}, less \eqn{\log_{10}(1/w)} for
+its share \eqn{w} of the weight of all the results, so the more results a
+run has, the more improbable one must be to stand out. With 100 equally
+weighted results, a p-value of \eqn{10^{-5}} scores about 3. The labels,
+by score, are:\tabular{ll}{
+   Score \tab Evaluation \cr
+   0 \tab normal \cr
+   above 0 \tab normalish \cr
+   above 1 \tab unusual \cr
+   above 2 \tab mildly suspicious \cr
+   above 3 \tab suspicious \cr
+   above 4 \tab very suspicious \cr
+   above 6 \tab VERY SUSPICIOUS \cr
+   above 8.5 \tab FAIL \cr
+   above 12, 17, 25, 45, 85, 165, 325, 999 \tab FAIL ! to FAIL !!!!!!!! \cr
+}
+
+
+"unusual" results are expected now and then in a long run of a good
+generator; a "FAIL" is not.
 
 A result with no valid p-value has \code{NA} for \code{p_value} and \code{evaluation},
 and is left out of the evaluation of the others. 'PractRand' 0.96's
@@ -66,6 +88,7 @@ itself, which the NS3 tests of the expanded battery can raise on heavily
 failing input; that is reported in a warning of class
 \code{zurngtest_stopped}.
 }
+
 \examples{
 # A repeating pattern fails at once
 pattern <- pract_raw(rep(as.raw(0:255), 2^8))

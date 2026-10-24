@@ -18,3 +18,8 @@
   `zurngtest_test_cfun()`, declared in `inst/include/zurngtest.h`.
 * `pract_test()` gives the results PractRand's own `RNG_test` gives for the
   same bytes, p-values near 0 and 1 included; a CI workflow checks this.
+* `?pract_test` documents PractRand's evaluations and their thresholds; a
+  new article, "Testing a generator package", shows how to test a package's
+  generators from R and from C.
+* `print()` on a result no longer indents its second and later result lines
+  by an extra space.

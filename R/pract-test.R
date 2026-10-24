@@ -5,10 +5,31 @@
 #' `RNG_test` does.
 #'
 #' Each test result is evaluated with 'PractRand''s own labels and
-#' thresholds, from "normal" through "unusual" and "suspicious" to "FAIL",
-#' which may carry up to eight exclamation marks for the most extreme
-#' failures. A source has failed at the first length with any result
-#' labelled "FAIL".
+#' thresholds, as its `RNG_test` evaluates them; see the Evaluations section.
+#' A source has failed at the first length with any result labelled "FAIL".
+#'
+#' @section Evaluations:
+#' 'PractRand' scores each result in decimal digits: about
+#' \eqn{\log_{10}(1/p)} for its p-value \eqn{p}, less \eqn{\log_{10}(1/w)} for
+#' its share \eqn{w} of the weight of all the results, so the more results a
+#' run has, the more improbable one must be to stand out. With 100 equally
+#' weighted results, a p-value of \eqn{10^{-5}} scores about 3. The labels,
+#' by score, are:
+#'
+#' | Score | Evaluation |
+#' | --- | --- |
+#' | 0 | normal |
+#' | above 0 | normalish |
+#' | above 1 | unusual |
+#' | above 2 | mildly suspicious |
+#' | above 3 | suspicious |
+#' | above 4 | very suspicious |
+#' | above 6 | VERY SUSPICIOUS |
+#' | above 8.5 | FAIL |
+#' | above 12, 17, 25, 45, 85, 165, 325, 999 | FAIL ! to FAIL !!!!!!!! |
+#'
+#' "unusual" results are expected now and then in a long run of a good
+#' generator; a "FAIL" is not.
 #'
 #' A result with no valid p-value has `NA` for `p_value` and `evaluation`,
 #' and is left out of the evaluation of the others. 'PractRand' 0.96's
@@ -280,12 +301,15 @@ print.zurngtest_result <- function(x, ...) {
     marked <- at[!at$evaluation %in% c("normal", "normalish"), , drop = FALSE]
     if (nrow(marked) > 0) {
       cat(sprintf("  %-34s%-14s%s\n", "Test Name", "p-value", "Evaluation"))
-      cat(sprintf(
-        "  %-34s%-14s%s\n",
-        marked$test,
-        format(marked$p_value, digits = 3),
-        marked$evaluation
-      ))
+      cat(
+        sprintf(
+          "  %-34s%-14s%s\n",
+          marked$test,
+          format(marked$p_value, digits = 3),
+          marked$evaluation
+        ),
+        sep = ""
+      )
     }
     unmarked <- nrow(at) - nrow(marked)
     if (nrow(marked) == 0) {
