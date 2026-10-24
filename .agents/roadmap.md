@@ -16,7 +16,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 | --- | --- | --- | --- | --- | --- |
 | 0 | [Package identity](#stage-0--package-identity) | quick | [#2](https://github.com/pedrobtz/zurngtest/issues/2) | [#12](https://github.com/pedrobtz/zurngtest/pull/12) | 2026-10-23 |
 | 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | [#14](https://github.com/pedrobtz/zurngtest/pull/14) | 2026-10-24 |
-| 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | | |
+| 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | | 2026-10-24 |
 | 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | | |
 | 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | | |
 | 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zurngtest/issues/7) | | |
@@ -180,6 +180,29 @@ doubling lengths over raw bytes and R-function sources, and returns a
   length errors by class, an early-ending connection, and `stop_on_failure`.
 - A known-weak source (a constant or a short LCG) reports `failed_at` within
   the first lengths.
+
+**Deviations and decisions** (2026-10-24).
+
+- R drives the loop and the C++ driver holds the tests behind a finalised
+  external pointer: R reads each chunk (up to 16 MiB) from the source and
+  feeds it, so no R code runs inside a C++ frame and an interrupt is an
+  ordinary R condition.
+- Lengths are powers of two from `min_bytes` to `max_bytes`, both at least
+  1024 bytes, one PractRand block.
+- `pract_raw()` has no word size, like `RNG_test stdin`, so it gets the
+  generic folding; `pract_fun(f, bits)` folds by `bits`.
+- `seed = NULL` seeds PractRand's known-good generator with 0, so runs are
+  reproducible.
+- A source that ends after `min_bytes` ends the run with a last row set at
+  the bytes tested (whole blocks); before `min_bytes` it is a source error.
+  A connection the run had to open is closed, and so destroyed, after it,
+  as `readLines()` does.
+- Design D9 and D10: results without a valid p-value are NA and left out
+  of the verdict, and an error PractRand raises mid-run ends the run with a
+  warning. Both work around PractRand 0.96's NS3 tests in the expanded
+  battery.
+- Integer words from `pract_fun()` are bit patterns, `NA` included: a
+  32-bit generator produces `0x80000000`.
 
 **Design.** §4, §5, §6, §8, §9.
 

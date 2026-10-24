@@ -21,10 +21,11 @@ questions (the name, which PractRand upstream, TestU01) are still open.
 
 ## Current state
 
-Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 1) the
-package vendors and compiles PractRand 0.96 and reports its version through
-`zurngtest_info()`; nothing tests a generator yet. The roadmap in
-`.agents/roadmap.md` takes it to v0.1.0.
+Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 2)
+`pract_test()` runs PractRand 0.96's core and expanded batteries over
+`pract_raw()` and `pract_fun()` sources. R's own generators, interleaving and
+the C callable for generator packages (Stage 3) are not built yet. The
+roadmap in `.agents/roadmap.md` takes it to v0.1.0.
 
 ## Stage tracking
 
@@ -99,9 +100,23 @@ To be completed as stages land; see `.agents/design.md`.
   returning to R. No handler can catch a throw from a destructor or from
   static initialisation, so `issue_error()` must never be reachable there
   (patch 0005; see `src/practrand/PROVENANCE`).
+- `src/driver.cpp` is the test driver, a port of PractRand's
+  `tools/TestManager.h`: the tests, the known-good hc256 they use, and the
+  block buffer with its repeated prefix, behind an external pointer whose
+  finalizer deletes them. `R/pract-test.R` drives it: it reads the source
+  in chunks, feeds whole 1 KiB blocks and collects results at each length,
+  so interrupts and source errors are plain R.
 
 ## Invariants that are easy to break
 
+- **No C++ object with a destructor is alive in a frame that calls an R
+  API function that can longjmp.** The `.Call` entries in `src/driver.cpp`
+  do their C++ work in `try` blocks on state the external pointer owns, copy
+  an exception's message into a `char` buffer, and only then call R. A
+  longjmp past a live `std::vector` leaks it and skips its destructor.
+- **Test helpers belong in `tests/testthat/helper-*.R`.** A helper defined
+  at the top of a test file breaks `devtools::test(shuffle = TRUE)`; this
+  happened twice.
 The design fixes these before any code exists:
 
 - **Only `R_init_zurngtest` is exported** from the shared library, with hidden

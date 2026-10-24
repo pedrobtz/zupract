@@ -251,6 +251,8 @@ throughput for the same generator; through `pract_rng()` at least 50%.
 | D6 | Info function | `zurngtest_info()`, the package name (R1) |
 | D7 | Name | `zurngtest`, chosen 2026-10-23 over `zupract` and `zupractrand`; the R prefix stays `pract_`, internal C prefix `zrt_` |
 | D8 | Upstream | PractRand 0.96 from SourceForge (2025-12-26), newer than every GitHub fork; decided 2026-10-24 in Stage 1, recorded in `src/practrand/PROVENANCE` |
+| D9 | Results without a valid p-value | Reported with `p_value` and `evaluation` NA and left out of the weight normalisation and of `failed_at`; every valid result keeps PractRand's labels and thresholds. PractRand 0.96's expanded battery gives NaN p-values from its NS3 tests even on good input, where `RNG_test` stops. Decided 2026-10-24 in Stage 2 |
+| D10 | Errors PractRand raises mid-run | End the run like an interrupt: the completed lengths are returned with a warning of class `zurngtest_stopped`. NS3 raises "threshold dropped below 0" on heavily failing input. Decided 2026-10-24 in Stage 2 |
 
 ## 14. Open questions
 
