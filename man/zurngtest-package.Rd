@@ -6,7 +6,7 @@
 \alias{zurngtest-package}
 \title{zurngtest: Test Random Number Generators with 'PractRand'}
 \description{
-Runs the 'PractRand' statistical test suite for random number generators by Chris Doty-Humphrey from R. Bits from a generator are tested at doubling lengths, and the result reports the length at which the generator first fails. Bits can come from R's own generators, from an R function, from raw bytes or a connection, or from a C function registered by another package, which is the fast path for generator packages.
+Runs the 'PractRand' statistical test suite for random number generators by Chris Doty-Humphrey \url{https://pracrand.sourceforge.net/} from R. Bits from a generator are tested at doubling lengths, and the result reports the length at which the generator first fails. Bits can come from R's own generators, from an R function, from raw bytes or a connection, or from a C function registered by another package, which is the fast path for generator packages.
 }
 \seealso{
 Useful links:
@@ -28,6 +28,7 @@ Authors:
 Other contributors:
 \itemize{
   \item Chris Doty-Humphrey (PractRand library, src/practrand/) [contributor, copyright holder]
+  \item Hongjun Wu (HC-256 reference implementation, from which src/practrand/src/RNGs/hc256.cpp derives) [copyright holder]
 }
 
 }
