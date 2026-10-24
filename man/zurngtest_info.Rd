@@ -8,8 +8,8 @@ zurngtest_info()
 }
 \value{
 A list with elements \code{version} (the package version),
-\code{practrand} (the vendored 'PractRand' version, \code{NA} until it is
-vendored) and \code{batteries} (the names of the test batteries).
+\code{practrand} (the version of the vendored 'PractRand' library) and
+\code{batteries} (the names of the test batteries).
 }
 \description{
 Reports the package version, the vendored 'PractRand' version and the

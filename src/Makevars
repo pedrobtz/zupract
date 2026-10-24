@@ -1,0 +1,40 @@
+# Portable make only: no GNU-make conditionals, no $(shell), and no -W*
+# overrides, each of which costs a CRAN rejection or a GNU make requirement.
+
+# PractRand's headers are included as "PractRand/...", from its include/.
+PKG_CPPFLAGS = -Ipractrand/include
+
+# Hidden visibility for every object, the vendored ones included: the only
+# symbol the shared library exports is R_init_zurngtest, marked visible in
+# init.cpp. The C callable for generator packages is registered, not
+# exported.
+PKG_CXXFLAGS = $(CXX_VISIBILITY)
+
+# The 21 translation units of the vendored library; see
+# practrand/PROVENANCE for what is left out and why.
+PRACTRAND_OBJECTS = \
+	practrand/src/math.o \
+	practrand/src/non_uniform.o \
+	practrand/src/platform_specifics.o \
+	practrand/src/rand.o \
+	practrand/src/RNGs/arbee.o \
+	practrand/src/RNGs/chacha.o \
+	practrand/src/RNGs/efiix.o \
+	practrand/src/RNGs/hc256.o \
+	practrand/src/RNGs/isaac.o \
+	practrand/src/RNGs/jsf.o \
+	practrand/src/RNGs/mrc.o \
+	practrand/src/RNGs/mrsf.o \
+	practrand/src/RNGs/salsa.o \
+	practrand/src/RNGs/sfc.o \
+	practrand/src/RNGs/sha2_based_pool.o \
+	practrand/src/RNGs/trivium.o \
+	practrand/src/sha2.o \
+	practrand/src/test_batteries.o \
+	practrand/src/tests_core.o \
+	practrand/src/tests_other.o \
+	practrand/src/xbg_helpers.o
+
+OBJECTS = \
+	init.o \
+	$(PRACTRAND_OBJECTS)
