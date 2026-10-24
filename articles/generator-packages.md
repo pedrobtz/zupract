@@ -1,0 +1,130 @@
+# Testing a generator package
+
+``` r
+
+library(zurngtest)
+```
+
+A package that provides random number generators should be able to say
+how its streams do in ‘PractRand’, the test suite the literature on
+generator design reports against. This article shows two ways to do that
+with zurngtest: from R, with any function that returns the generator’s
+bits, and from C, where ‘PractRand’ reads the generator’s words with no
+R in the loop.
+
+The examples use [zurand](https://github.com/pedrobtz/zurand), a package
+of counter-based generators.
+
+## From R
+
+[`pract_fun()`](https://pedrobtz.github.io/zurngtest/reference/pract_raw.md)
+turns any R function that returns `n` words into a source. zurand’s
+generators are stateless: `rng_bits(key, n)` is the first `n` words of
+the stream that `key` names. A long stream therefore takes each chunk
+from its own substream, `rng_fold(key, i)` for the `i`th chunk, the way
+zurand describes substreams.
+
+``` r
+
+library(zurand)
+
+key <- rng_key(2024)
+chunk <- 0
+philox_words <- function(n) {
+  chunk <<- chunk + 1
+  words <- rng_bits(rng_fold(key, chunk), n, bits = 32)
+  # 32-bit values as doubles, to the integers with the same bit patterns
+  words[words >= 2^31] <- words[words >= 2^31] - 2^32
+  suppressWarnings(as.integer(words))
+}
+
+pract_test(pract_fun(philox_words), min_bytes = 2^20, max_bytes = 2^22)
+#> PractRand 0.96 test of function philox_words, 32-bit words
+#> length= 1 megabyte (2^20 bytes)
+#>   no anomalies in 80 test result(s)
+#> length= 2 megabytes (2^21 bytes)
+#>   no anomalies in 90 test result(s)
+#> length= 4 megabytes (2^22 bytes)
+#>   no anomalies in 99 test result(s)
+#> No failure, time= 0.8 seconds
+```
+
+Runs this short are smoke tests. ‘PractRand’ results that matter for a
+generator come from runs of gigabytes to terabytes, which belong in a
+continuous-integration job or a long-running session rather than in a
+package’s checks on CRAN.
+
+## From C
+
+A generator written in C runs fastest when ‘PractRand’ asks it for words
+directly. zurngtest registers a C function for that, declared in its
+header `zurngtest.h`. A generator package adds `zurngtest` to
+`LinkingTo` (and to `Suggests`), writes a fill function, and calls
+`zurngtest_test_cfun()` from C code that R calls through
+[`.Call()`](https://rdrr.io/r/base/CallExternal.html):
+
+``` c
+#include <zurngtest.h>
+
+typedef struct { uint32_t x; } xorshift32;
+
+static void fill(void *state, uint32_t *out, size_t n) {
+  xorshift32 *g = state;
+  for (size_t i = 0; i < n; i++) {
+    g->x ^= g->x << 13;
+    g->x ^= g->x >> 17;
+    g->x ^= g->x << 5;
+    out[i] = g->x;
+  }
+}
+
+SEXP test_xorshift32(SEXP options) {
+  xorshift32 g = {2463534242u};
+  return zurngtest_test_cfun(fill, &g, options);
+}
+```
+
+`options` is a named list of
+[`pract_test()`](https://pedrobtz.github.io/zurngtest/reference/pract_test.md)‘s
+other arguments, such as `list(min_bytes = 2^20, max_bytes = 2^30)`, and
+the result is the same data frame
+[`pract_test()`](https://pedrobtz.github.io/zurngtest/reference/pract_test.md)
+returns. The function is found with `R_GetCCallable()`, so nothing links
+to zurngtest at build time, and the fill function runs on the main
+thread. Through this path zurngtest tests words at about the speed of
+’PractRand’’s own `RNG_test`.
+
+zurand’s own tests build a small package against both headers and test a
+zurand stream this way.
+
+## Reading a result
+
+The result has one row per test and length, with ‘PractRand’’s own
+evaluation. Its `failed_at` attribute is the first length at which any
+result was a failure, or `NA`:
+
+``` r
+
+lcg_low_bits <- local({
+  x <- 1
+  function(n) {
+    out <- raw(n)
+    for (i in seq_len(n)) {
+      x <<- (1664525 * x + 1013904223) %% 2^32
+      out[i] <- as.raw(x %% 256)
+    }
+    out
+  }
+})
+res <- pract_test(pract_fun(lcg_low_bits, bits = 8), min_bytes = 2^12, max_bytes = 2^16)
+attr(res, "failed_at")
+#> [1] 4096
+head(as.data.frame(res)[order(res$p_value), ], 3)
+#>   bytes       test p_value    evaluation
+#> 3  4096   Gap-16:A       0 FAIL !!!!!!!!
+#> 4  4096   Gap-16:B       0 FAIL !!!!!!!!
+#> 8  4096 FPF/16:all       0  FAIL !!!!!!!
+```
+
+The low byte of a power-of-two linear congruential generator repeats
+every 256 values, which ‘PractRand’ finds in the first few kilobytes.

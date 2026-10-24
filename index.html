@@ -32,6 +32,7 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -51,22 +52,105 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of zurngtest is to …</p>
+<div class="section level2">
+<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+</h2>
+<p>A random number generator can pass every statistical test you know of and still fail the one that matters for your simulation. The test suite that the current literature on generator design reports against is <a href="https://pracrand.sourceforge.net/" class="external-link">PractRand</a>, by Chris Doty-Humphrey: it tests a stream of bits at doubling lengths and reports the length at which a generator first fails. Until now, using it from R meant writing bytes to a file and running its command-line tool.</p>
+<p>zurngtest runs PractRand from R:</p>
+<ul>
+<li>
+<strong>PractRand’s own verdicts.</strong> The core and expanded batteries of PractRand 0.96, with its labels and thresholds unchanged. With the core battery, <code><a href="reference/pract_test.html">pract_test()</a></code> gives the results PractRand’s own <code>RNG_test</code> gives for the same bytes, which a continuous-integration job checks.</li>
+<li>
+<strong>R’s generators on their own bits.</strong> <code><a href="reference/pract_rng.html">pract_rng()</a></code> recovers the integers behind <code><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif()</a></code> for each <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">RNGkind()</a></code> where they exist, and leaves the session’s random numbers as they were.</li>
+<li>
+<strong>Any source of bits.</strong> Raw bytes, connections, R functions, and combinations of them, such as two seeds of one generator interleaved.</li>
+<li>
+<strong>A fast path for generator packages.</strong> Generators written in C hand their words to PractRand directly, at about the speed of <code>RNG_test</code>.</li>
+<li>
+<strong>No dependencies beyond R.</strong> PractRand is bundled, and zurngtest imports only base R’s stats.</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the development version of zurngtest from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>zurngtest is not on CRAN yet. Install the development version from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"pedrobtz/zurngtest"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>This is a basic example which shows you how to solve a common problem:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pedrobtz.github.io/zurngtest/">zurngtest</a></span><span class="op">)</span></span>
-<span><span class="co">## basic example code</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://pedrobtz.github.io/zurngtest/">zurngtest</a></span><span class="op">)</span></span></code></pre></div>
+<p>The low byte of a linear congruential generator repeats every 256 values. PractRand needs a few kilobytes to see it:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lcg_low_bits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/eval.html" class="external-link">local</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>  <span class="va">x</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span>  <span class="kw">function</span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/raw.html" class="external-link">raw</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>      <span class="va">x</span> <span class="op">&lt;&lt;-</span> <span class="op">(</span><span class="fl">1664525</span> <span class="op">*</span> <span class="va">x</span> <span class="op">+</span> <span class="fl">1013904223</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">2</span><span class="op">^</span><span class="fl">32</span></span>
+<span>      <span class="va">out</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/raw.html" class="external-link">as.raw</a></span><span class="op">(</span><span class="va">x</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">256</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">out</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/pract_test.html">pract_test</a></span><span class="op">(</span><span class="fu"><a href="reference/pract_raw.html">pract_fun</a></span><span class="op">(</span><span class="va">lcg_low_bits</span>, bits <span class="op">=</span> <span class="fl">8</span><span class="op">)</span>, min_bytes <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fl">12</span>, max_bytes <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fl">14</span><span class="op">)</span></span>
+<span><span class="co">#&gt; PractRand 0.96 test of function lcg_low_bits, 8-bit words</span></span>
+<span><span class="co">#&gt; length= 4 kilobytes (2^12 bytes)</span></span>
+<span><span class="co">#&gt;   Test Name                         p-value       Evaluation</span></span>
+<span><span class="co">#&gt;   BCFN(2+0,13-9U)                   1.00e-28      FAIL !!!</span></span>
+<span><span class="co">#&gt;   DC6-9x1Bytes-1                    2.66e-56      FAIL !!!!</span></span>
+<span><span class="co">#&gt;   Gap-16:A                          0.00e+00      FAIL !!!!!!!!</span></span>
+<span><span class="co">#&gt;   Gap-16:B                          0.00e+00      FAIL !!!!!!!!</span></span>
+<span><span class="co">#&gt;   Gap-16:C                          1.00e+00      mildly suspicious</span></span>
+<span><span class="co">#&gt;   FPF/16:all                        0.00e+00      FAIL !!!!!!!</span></span>
+<span><span class="co">#&gt;   FPF/16:cross                      0.00e+00      FAIL !!!!!!!</span></span>
+<span><span class="co">#&gt;   mod3n(5):(2,9-6)                  5.23e-06      suspicious</span></span>
+<span><span class="co">#&gt;   ...and 4 test result(s) without anomalies</span></span>
+<span><span class="co">#&gt; Failed at 4 kilobytes (2^12 bytes), time= 0.3 seconds</span></span></code></pre></div>
+<p>R’s default generator, Mersenne-Twister, tested on its own 32-bit integers, does not fail over the first 4 megabytes. An “unusual” result now and then is what a good generator gives; a “FAIL” is not:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/pract_test.html">pract_test</a></span><span class="op">(</span><span class="fu"><a href="reference/pract_rng.html">pract_rng</a></span><span class="op">(</span><span class="st">"Mersenne-Twister"</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, min_bytes <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fl">20</span>, max_bytes <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fl">22</span><span class="op">)</span></span>
+<span><span class="co">#&gt; PractRand 0.96 test of R's Mersenne-Twister generator (seed 1), its 32-bit integers</span></span>
+<span><span class="co">#&gt; length= 1 megabyte (2^20 bytes)</span></span>
+<span><span class="co">#&gt;   no anomalies in 80 test result(s)</span></span>
+<span><span class="co">#&gt; length= 2 megabytes (2^21 bytes)</span></span>
+<span><span class="co">#&gt;   no anomalies in 90 test result(s)</span></span>
+<span><span class="co">#&gt; length= 4 megabytes (2^22 bytes)</span></span>
+<span><span class="co">#&gt;   Test Name                         p-value       Evaluation</span></span>
+<span><span class="co">#&gt;   [Low1/32]DC6-9x1Bytes-1           0.00141       unusual</span></span>
+<span><span class="co">#&gt;   ...and 98 test result(s) without anomalies</span></span>
+<span><span class="co">#&gt; No failure, time= 1.2 seconds</span></span></code></pre></div>
+<p>Seeding schemes deserve testing too, since a combination of streams can fail where each stream passes. Two seeds of Mersenne-Twister, interleaved word by word, pass:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">seeds</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pract_interleave.html">pract_interleave</a></span><span class="op">(</span><span class="fu"><a href="reference/pract_rng.html">pract_rng</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="reference/pract_rng.html">pract_rng</a></span><span class="op">(</span>seed <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/pract_test.html">pract_test</a></span><span class="op">(</span><span class="va">seeds</span>, min_bytes <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fl">20</span>, max_bytes <span class="op">=</span> <span class="fl">2</span><span class="op">^</span><span class="fl">21</span><span class="op">)</span></span></code></pre></div>
+<p>The result is a data frame with one row per test and length, and the first failing length, if any, in its <code>failed_at</code> attribute:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"failed_at"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;     bytes            test   p_value evaluation</span></span>
+<span><span class="co">#&gt; 1 1048576 BCFN(2+0,13-7U) 0.7821732     normal</span></span>
+<span><span class="co">#&gt; 2 1048576 BCFN(2+1,13-7U) 0.9186383     normal</span></span>
+<span><span class="co">#&gt; 3 1048576 BCFN(2+2,13-8U) 0.6471684     normal</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="learn-more">Learn more<a class="anchor" aria-label="anchor" href="#learn-more"></a>
+</h2>
+<ul>
+<li>
+<a href="https://pedrobtz.github.io/zurngtest/articles/generator-packages.html">Testing a generator package</a>: testing a package’s generators from R and from C.</li>
+<li>
+<a href="https://pedrobtz.github.io/zurngtest/reference/">The reference index</a> documents every function, and <code><a href="reference/pract_test.html">?pract_test</a></code> lists PractRand’s evaluations.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="related-work">Related work<a class="anchor" aria-label="anchor" href="#related-work"></a>
+</h2>
+<p>PractRand is by Chris Doty-Humphrey and is in the public domain; zurngtest bundles version 0.96 with a few patches, described in the package’s <code>src/practrand/PROVENANCE</code>. On CRAN, <a href="https://cran.r-project.org/package=RDieHarder" class="external-link">RDieHarder</a> runs the older DieHarder suite.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -104,6 +188,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
+<li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
 <li><a href="https://github.com/pedrobtz/zurngtest/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/pedrobtz/zurngtest/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://github.com/pedrobtz/zurngtest/actions/workflows/coverage.yaml" class="external-link"><img src="https://raw.githubusercontent.com/pedrobtz/zurngtest/gh-pages/badges/coverage.svg" alt="coverage"></a></li>
 </ul>

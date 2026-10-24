@@ -16,6 +16,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -49,6 +50,10 @@
 <li>Packages can test a generator written in C through the registered callable <code>zurngtest_test_cfun()</code>, declared in <code>inst/include/zurngtest.h</code>.</li>
 <li>
 <code><a href="../reference/pract_test.html">pract_test()</a></code> gives the results PractRand’s own <code>RNG_test</code> gives for the same bytes, p-values near 0 and 1 included; a CI workflow checks this.</li>
+<li>
+<code><a href="../reference/pract_test.html">?pract_test</a></code> documents PractRand’s evaluations and their thresholds; a new article, “Testing a generator package”, shows how to test a package’s generators from R and from C.</li>
+<li>
+<code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> on a result no longer indents its second and later result lines by an extra space.</li>
 </ul></div>
   </main></div>
 

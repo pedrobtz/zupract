@@ -62,10 +62,34 @@ source, and `elapsed`, the run time in seconds.
 ## Details
 
 Each test result is evaluated with 'PractRand”s own labels and
-thresholds, from "normal" through "unusual" and "suspicious" to "FAIL",
-which may carry up to eight exclamation marks for the most extreme
-failures. A source has failed at the first length with any result
+thresholds, as its `RNG_test` evaluates them; see the Evaluations
+section. A source has failed at the first length with any result
 labelled "FAIL".
+
+## Evaluations
+
+'PractRand' scores each result in decimal digits: about
+\\\log\_{10}(1/p)\\ for its p-value \\p\\, less \\\log\_{10}(1/w)\\ for
+its share \\w\\ of the weight of all the results, so the more results a
+run has, the more improbable one must be to stand out. With 100 equally
+weighted results, a p-value of \\10^{-5}\\ scores about 3. The labels,
+by score, are:
+
+|                                         |                         |
+|-----------------------------------------|-------------------------|
+| Score                                   | Evaluation              |
+| 0                                       | normal                  |
+| above 0                                 | normalish               |
+| above 1                                 | unusual                 |
+| above 2                                 | mildly suspicious       |
+| above 3                                 | suspicious              |
+| above 4                                 | very suspicious         |
+| above 6                                 | VERY SUSPICIOUS         |
+| above 8.5                               | FAIL                    |
+| above 12, 17, 25, 45, 85, 165, 325, 999 | FAIL ! to FAIL !!!!!!!! |
+
+"unusual" results are expected now and then in a long run of a good
+generator; a "FAIL" is not.
 
 A result with no valid p-value has `NA` for `p_value` and `evaluation`,
 and is left out of the evaluation of the others. 'PractRand' 0.96's
@@ -91,51 +115,51 @@ pract_test(pattern, min_bytes = 2^16, max_bytes = 2^16)
 #> length= 64 kilobytes (2^16 bytes)
 #>   Test Name                         p-value       Evaluation
 #>   BCFN(2+0,13-9U)                    0.00e+00     FAIL !!!!!!!
-#>    BCFN(2+1,13-9U)                    0.00e+00     FAIL !!!!!!!
-#>    BCFN(2+2,13-9U)                   1.87e-244     FAIL !!!!!!
-#>    DC6-9x1Bytes-1                     0.00e+00     FAIL !!!!!!!!
-#>    Gap-16:A                           0.00e+00     FAIL !!!!!!!!
-#>    Gap-16:B                           0.00e+00     FAIL !!!!!!!!
-#>    Gap-16:C                           1.00e+00     FAIL !!!!!!
-#>    FPF/16:(1,14-8)                    1.00e+00     very suspicious
-#>    FPF/16:(2,14-8)                    0.00e+00     FAIL !!!!!!!!
-#>    FPF/16:(3,14-9)                    0.00e+00     FAIL !!!!!!!
-#>    FPF/16:(4,14-10)                   0.00e+00     FAIL !!!!!!!
-#>    FPF/16:(5,14-11)                  1.53e-233     FAIL !!!!!!
-#>    FPF/16:(6,14-11)                  1.53e-233     FAIL !!!!!!
-#>    FPF/16:all                         0.00e+00     FAIL !!!!!!!!
-#>    FPF/16:cross                       0.00e+00     FAIL !!!!!!!!
-#>    BDayS2(4,24)[18]                  6.01e-200     FAIL !!!!!!
-#>    BRank(12):score:64(7)              1.00e+00     FAIL !!!!!!!!
-#>    mod3n(5):(0,9-6)                   0.00e+00     FAIL !!!!!!!
-#>    mod3n(5):(1,9-6)                   0.00e+00     FAIL !!!!!!!
-#>    mod3n(5):(2,9-6)                  7.09e-218     FAIL !!!!!!
-#>    mod3n(5):(3,9-6)                  4.43e-102     FAIL !!!!!
-#>    [Low1/8]BCFN(2+0,13-9U)            0.00e+00     FAIL !!!!!!!
-#>    [Low1/8]DC6-9x1Bytes-1             0.00e+00     FAIL !!!!!!!!
-#>    [Low1/8]Gap-16:A                   0.00e+00     FAIL !!!!!!!!
-#>    [Low1/8]Gap-16:B                   0.00e+00     FAIL !!!!!!!!
-#>    [Low1/8]Gap-16:C                   1.00e+00     FAIL !!!!!
-#>    [Low1/8]FPF/16:(1,14-10)           0.00e+00     FAIL !!!!!!!!
-#>    [Low1/8]FPF/16:all                 0.00e+00     FAIL !!!!!!!!
-#>    [Low1/8]FPF/16:cross               0.00e+00     FAIL !!!!!!!!
-#>    [Low1/8]mod3n(5):(0,9-6)           0.00e+00     FAIL !!!!!!!
-#>    [Low1/8]mod3n(5):(1,9-6)          8.40e-217     FAIL !!!!!!
-#>    [Low1/8]mod3n(5):(2,9-6)          3.13e-106     FAIL !!!!!
-#>    [Low4/32]BCFN(2+0,13-9U)           0.00e+00     FAIL !!!!!!!
-#>    [Low4/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!!
-#>    [Low4/32]Gap-16:A                  0.00e+00     FAIL !!!!!!!!
-#>    [Low4/32]Gap-16:B                  0.00e+00     FAIL !!!!!!!!
-#>    [Low4/32]Gap-16:C                  1.00e+00     FAIL !!!!!
-#>    [Low4/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!
-#>    [Low4/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!
-#>    [Low4/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!
-#>    [Low4/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!
-#>    [Low1/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!
-#>    [Low1/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!
-#>    [Low1/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!
-#>    [Low1/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!
-#>    [Low1/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!
+#>   BCFN(2+1,13-9U)                    0.00e+00     FAIL !!!!!!!
+#>   BCFN(2+2,13-9U)                   1.87e-244     FAIL !!!!!!
+#>   DC6-9x1Bytes-1                     0.00e+00     FAIL !!!!!!!!
+#>   Gap-16:A                           0.00e+00     FAIL !!!!!!!!
+#>   Gap-16:B                           0.00e+00     FAIL !!!!!!!!
+#>   Gap-16:C                           1.00e+00     FAIL !!!!!!
+#>   FPF/16:(1,14-8)                    1.00e+00     very suspicious
+#>   FPF/16:(2,14-8)                    0.00e+00     FAIL !!!!!!!!
+#>   FPF/16:(3,14-9)                    0.00e+00     FAIL !!!!!!!
+#>   FPF/16:(4,14-10)                   0.00e+00     FAIL !!!!!!!
+#>   FPF/16:(5,14-11)                  1.53e-233     FAIL !!!!!!
+#>   FPF/16:(6,14-11)                  1.53e-233     FAIL !!!!!!
+#>   FPF/16:all                         0.00e+00     FAIL !!!!!!!!
+#>   FPF/16:cross                       0.00e+00     FAIL !!!!!!!!
+#>   BDayS2(4,24)[18]                  6.01e-200     FAIL !!!!!!
+#>   BRank(12):score:64(7)              1.00e+00     FAIL !!!!!!!!
+#>   mod3n(5):(0,9-6)                   0.00e+00     FAIL !!!!!!!
+#>   mod3n(5):(1,9-6)                   0.00e+00     FAIL !!!!!!!
+#>   mod3n(5):(2,9-6)                  7.09e-218     FAIL !!!!!!
+#>   mod3n(5):(3,9-6)                  4.43e-102     FAIL !!!!!
+#>   [Low1/8]BCFN(2+0,13-9U)            0.00e+00     FAIL !!!!!!!
+#>   [Low1/8]DC6-9x1Bytes-1             0.00e+00     FAIL !!!!!!!!
+#>   [Low1/8]Gap-16:A                   0.00e+00     FAIL !!!!!!!!
+#>   [Low1/8]Gap-16:B                   0.00e+00     FAIL !!!!!!!!
+#>   [Low1/8]Gap-16:C                   1.00e+00     FAIL !!!!!
+#>   [Low1/8]FPF/16:(1,14-10)           0.00e+00     FAIL !!!!!!!!
+#>   [Low1/8]FPF/16:all                 0.00e+00     FAIL !!!!!!!!
+#>   [Low1/8]FPF/16:cross               0.00e+00     FAIL !!!!!!!!
+#>   [Low1/8]mod3n(5):(0,9-6)           0.00e+00     FAIL !!!!!!!
+#>   [Low1/8]mod3n(5):(1,9-6)          8.40e-217     FAIL !!!!!!
+#>   [Low1/8]mod3n(5):(2,9-6)          3.13e-106     FAIL !!!!!
+#>   [Low4/32]BCFN(2+0,13-9U)           0.00e+00     FAIL !!!!!!!
+#>   [Low4/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!!
+#>   [Low4/32]Gap-16:A                  0.00e+00     FAIL !!!!!!!!
+#>   [Low4/32]Gap-16:B                  0.00e+00     FAIL !!!!!!!!
+#>   [Low4/32]Gap-16:C                  1.00e+00     FAIL !!!!!
+#>   [Low4/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!
+#>   [Low4/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!
+#>   [Low4/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!
+#>   [Low4/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!
+#>   [Low1/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!
+#>   [Low1/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!
+#>   [Low1/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!
+#>   [Low1/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!
+#>   [Low1/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!
 #> Failed at 64 kilobytes (2^16 bytes), time= 0.3 seconds
 
 # R's own generator, as bytes

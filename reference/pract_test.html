@@ -20,6 +20,7 @@ RNG_test does."></head><body>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item"><a class="nav-link" href="../articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -101,10 +102,20 @@ description of the source, and <code>elapsed</code>, the run time in seconds.</p
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>Each test result is evaluated with 'PractRand”s own labels and
-thresholds, from "normal" through "unusual" and "suspicious" to "FAIL",
-which may carry up to eight exclamation marks for the most extreme
-failures. A source has failed at the first length with any result
-labelled "FAIL".</p>
+thresholds, as its <code>RNG_test</code> evaluates them; see the Evaluations section.
+A source has failed at the first length with any result labelled "FAIL".</p>
+    </div>
+    <div class="section level2">
+    <h2 id="evaluations">Evaluations<a class="anchor" aria-label="anchor" href="#evaluations"></a></h2>
+
+
+<p>'PractRand' scores each result in decimal digits: about
+\(\log_{10}(1/p)\) for its p-value \(p\), less \(\log_{10}(1/w)\) for
+its share \(w\) of the weight of all the results, so the more results a
+run has, the more improbable one must be to stand out. With 100 equally
+weighted results, a p-value of \(10^{-5}\) scores about 3. The labels,
+by score, are:</p><table class="table table"><tr><td>Score</td><td>Evaluation</td></tr><tr><td>0</td><td>normal</td></tr><tr><td>above 0</td><td>normalish</td></tr><tr><td>above 1</td><td>unusual</td></tr><tr><td>above 2</td><td>mildly suspicious</td></tr><tr><td>above 3</td><td>suspicious</td></tr><tr><td>above 4</td><td>very suspicious</td></tr><tr><td>above 6</td><td>VERY SUSPICIOUS</td></tr><tr><td>above 8.5</td><td>FAIL</td></tr><tr><td>above 12, 17, 25, 45, 85, 165, 325, 999</td><td>FAIL ! to FAIL !!!!!!!!</td></tr></table><p>"unusual" results are expected now and then in a long run of a good
+generator; a "FAIL" is not.</p>
 <p>A result with no valid p-value has <code>NA</code> for <code>p_value</code> and <code>evaluation</code>,
 and is left out of the evaluation of the others. 'PractRand' 0.96's
 expanded battery gives such results from its NS3 tests even on good
@@ -128,51 +139,51 @@ failing input; that is reported in a warning of class
 <span class="r-out co"><span class="r-pr">#&gt;</span> length= 64 kilobytes (2^16 bytes)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Test Name                         p-value       Evaluation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   BCFN(2+0,13-9U)                    0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    BCFN(2+1,13-9U)                    0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    BCFN(2+2,13-9U)                   1.87e-244     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    DC6-9x1Bytes-1                     0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Gap-16:A                           0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Gap-16:B                           0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Gap-16:C                           1.00e+00     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:(1,14-8)                    1.00e+00     very suspicious</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:(2,14-8)                    0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:(3,14-9)                    0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:(4,14-10)                   0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:(5,14-11)                  1.53e-233     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:(6,14-11)                  1.53e-233     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:all                         0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    FPF/16:cross                       0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    BDayS2(4,24)[18]                  6.01e-200     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    BRank(12):score:64(7)              1.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    mod3n(5):(0,9-6)                   0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    mod3n(5):(1,9-6)                   0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    mod3n(5):(2,9-6)                  7.09e-218     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    mod3n(5):(3,9-6)                  4.43e-102     FAIL !!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]BCFN(2+0,13-9U)            0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]DC6-9x1Bytes-1             0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]Gap-16:A                   0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]Gap-16:B                   0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]Gap-16:C                   1.00e+00     FAIL !!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]FPF/16:(1,14-10)           0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]FPF/16:all                 0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]FPF/16:cross               0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]mod3n(5):(0,9-6)           0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]mod3n(5):(1,9-6)          8.40e-217     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/8]mod3n(5):(2,9-6)          3.13e-106     FAIL !!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]BCFN(2+0,13-9U)           0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]Gap-16:A                  0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]Gap-16:B                  0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]Gap-16:C                  1.00e+00     FAIL !!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low4/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    [Low1/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   BCFN(2+1,13-9U)                    0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   BCFN(2+2,13-9U)                   1.87e-244     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   DC6-9x1Bytes-1                     0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Gap-16:A                           0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Gap-16:B                           0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   Gap-16:C                           1.00e+00     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:(1,14-8)                    1.00e+00     very suspicious</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:(2,14-8)                    0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:(3,14-9)                    0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:(4,14-10)                   0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:(5,14-11)                  1.53e-233     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:(6,14-11)                  1.53e-233     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:all                         0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   FPF/16:cross                       0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   BDayS2(4,24)[18]                  6.01e-200     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   BRank(12):score:64(7)              1.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mod3n(5):(0,9-6)                   0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mod3n(5):(1,9-6)                   0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mod3n(5):(2,9-6)                  7.09e-218     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   mod3n(5):(3,9-6)                  4.43e-102     FAIL !!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]BCFN(2+0,13-9U)            0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]DC6-9x1Bytes-1             0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]Gap-16:A                   0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]Gap-16:B                   0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]Gap-16:C                   1.00e+00     FAIL !!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]FPF/16:(1,14-10)           0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]FPF/16:all                 0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]FPF/16:cross               0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]mod3n(5):(0,9-6)           0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]mod3n(5):(1,9-6)          8.40e-217     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/8]mod3n(5):(2,9-6)          3.13e-106     FAIL !!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]BCFN(2+0,13-9U)           0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]Gap-16:A                  0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]Gap-16:B                  0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]Gap-16:C                  1.00e+00     FAIL !!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low4/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/32]DC6-9x1Bytes-1            0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/32]FPF/16:cross              0.00e+00     FAIL !!!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/32]mod3n(5):(0,9-6)          0.00e+00     FAIL !!!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/32]mod3n(5):(1,9-6)         8.57e-217     FAIL !!!!!!</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   [Low1/32]mod3n(5):(2,9-6)         3.13e-106     FAIL !!!!!</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Failed at 64 kilobytes (2^16 bytes), time= 0.3 seconds</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># R's own generator, as bytes</span></span></span>

@@ -32,3 +32,9 @@
 - [`pract_test()`](https://pedrobtz.github.io/zurngtest/reference/pract_test.md)
   gives the results PractRand’s own `RNG_test` gives for the same bytes,
   p-values near 0 and 1 included; a CI workflow checks this.
+- [`?pract_test`](https://pedrobtz.github.io/zurngtest/reference/pract_test.md)
+  documents PractRand’s evaluations and their thresholds; a new article,
+  “Testing a generator package”, shows how to test a package’s
+  generators from R and from C.
+- [`print()`](https://rdrr.io/r/base/print.html) on a result no longer
+  indents its second and later result lines by an extra space.
