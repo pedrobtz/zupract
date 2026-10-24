@@ -33,11 +33,13 @@ test_that("the .Call entry points are registered and found only as symbols", {
   expect_setequal(
     names(routines),
     c(
+      "zrt_cfun_fill",
       "zrt_driver_feed",
       "zrt_driver_new",
       "zrt_driver_results",
       "zrt_issue_error_for_tests",
-      "zrt_practrand_version"
+      "zrt_practrand_version",
+      "zrt_test_cfun_counter"
     )
   )
   # R_useDynamicSymbols(FALSE) and R_forceSymbols(TRUE): no lookup by name.
