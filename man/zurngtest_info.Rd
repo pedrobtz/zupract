@@ -7,13 +7,13 @@
 zurngtest_info()
 }
 \value{
-A list with elements \code{version} (the package version),
-\code{practrand} (the version of the vendored 'PractRand' library) and
-\code{batteries} (the names of the test batteries).
+A list with elements \code{version} (the package version, a string),
+\code{practrand} (the version of the vendored 'PractRand' library, a
+string) and \code{batteries} (a character vector of battery names).
 }
 \description{
 Reports the package version, the vendored 'PractRand' version and the
-test batteries available.
+test batteries zurngtest supports.
 }
 \examples{
 zurngtest_info()
