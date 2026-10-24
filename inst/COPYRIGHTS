@@ -1,0 +1,20 @@
+zurngtest bundles PractRand 0.96, by Chris Doty-Humphrey, in src/practrand/.
+
+PractRand is released to the public domain, with the Creative Commons CC0
+1.0 Universal dedication as a fallback where a public-domain dedication is
+not recognised. Its notice is src/practrand/LICENSE. That notice also covers
+the generators PractRand includes: jsf and isaac were designed by Robert
+Jenkins, who released them to the public domain; the hc256 implementation
+starts from the eSTREAM reference implementation, whose authors made the
+cipher free for anyone to use; the remaining implementations are Chris
+Doty-Humphrey's own.
+
+The "NotRecommended" generators upstream ships in RNGs/other/ are not
+bundled, because the notice says some of that code was copied from public
+sources without a stated licence.
+
+src/practrand/ is upstream's library plus two local patches, described in
+src/practrand/PROVENANCE: one removes output to stdout and stderr and calls
+to exit(), the other fixes compiler warnings.
+
+The rest of zurngtest is under the MIT licence; see LICENSE.

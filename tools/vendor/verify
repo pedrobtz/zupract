@@ -1,0 +1,72 @@
+#!/bin/sh
+# Verify that src/practrand/ is the pinned PractRand archive plus exactly the
+# patch series in tools/patches/, byte for byte. Exits non-zero on any
+# difference. Run from the package root.
+#
+#   tools/vendor/verify            the gate
+#   tools/vendor/verify --canary   the gate's canary: derive the tree with the
+#                                  first patch left out and require
+#                                  verification to FAIL
+set -eu
+
+CANARY=0
+[ "${1:-}" = "--canary" ] && CANARY=1
+
+PROV="src/practrand/PROVENANCE"
+VERSION=$(awk '/^  Version:/ {print $2}' "$PROV")
+echo "==> pinned PractRand $VERSION"
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+FAILURES="$WORK/failures"
+: > "$FAILURES"
+
+if [ "$CANARY" -eq 1 ]; then
+  tools/vendor/derive "$WORK/tree" --skip-first
+else
+  tools/vendor/derive "$WORK/tree"
+fi
+
+# The patch series on disk must be exactly what PROVENANCE lists, in order.
+awk '/^  Local patches:/ {on = 1; next} on && /^ +[^ ]+\.patch$/ {print $1; next} on {exit}' \
+  "$PROV" > "$WORK/listed"
+ls tools/patches/*.patch 2>/dev/null | xargs -n1 basename > "$WORK/present" || true
+cmp -s "$WORK/listed" "$WORK/present" ||
+  echo "FAIL: tools/patches/ does not match the patch list in $PROV" >> "$FAILURES"
+
+# Every derived file must be present and identical, and nothing may be in
+# src/practrand/ that the derivation did not produce, apart from PROVENANCE
+# and build artefacts: R builds in place.
+(cd "$WORK/tree" && find . -type f | sort) > "$WORK/derived"
+(cd src/practrand && find . -type f ! -name PROVENANCE \
+  ! -name '*.o' ! -name '*.so' ! -name '*.dll' ! -name '*.dylib' | sort) > "$WORK/local"
+comm -23 "$WORK/derived" "$WORK/local" | sed 's|^\./|FAIL: missing src/practrand/|' >> "$FAILURES"
+comm -13 "$WORK/derived" "$WORK/local" | sed 's|^\./|FAIL: not derived from upstream: src/practrand/|' >> "$FAILURES"
+count=0
+while read -r f; do
+  if [ -f "src/practrand/$f" ] && ! cmp -s "$WORK/tree/$f" "src/practrand/$f"; then
+    echo "FAIL: src/practrand/${f#./} differs from upstream plus patches" >> "$FAILURES"
+  fi
+  count=$((count + 1))
+done < "$WORK/derived"
+
+# zurngtest_info() reports the version PractRand compiles in; it must be the
+# version pinned here.
+grep -q "version_str = \"$VERSION\"" src/practrand/src/rand.cpp ||
+  echo "FAIL: src/practrand/src/rand.cpp does not report version $VERSION" >> "$FAILURES"
+
+if [ "$CANARY" -eq 1 ]; then
+  if [ -s "$FAILURES" ]; then
+    echo "==> canary OK: verification failed with a patch left out"
+    exit 0
+  fi
+  echo "CANARY FAILED: verification passed with a patch left out" >&2
+  exit 1
+fi
+
+if [ -s "$FAILURES" ]; then
+  cat "$FAILURES" >&2
+  echo "==> vendor tree FAILED verification" >&2
+  exit 1
+fi
+echo "==> vendor tree verified ($count files, PractRand $VERSION plus $(wc -l < "$WORK/present" | tr -d ' ') patches)"

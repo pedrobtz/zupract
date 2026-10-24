@@ -1,8 +1,11 @@
 Package: zurngtest
 Title: Test Random Number Generators with 'PractRand'
 Version: 0.0.0.9000
-Authors@R:
-    person("Pedro", "Baltazar", , "pedrobtz@gmail.com", role = c("aut", "cre", "cph"))
+Authors@R: c(
+    person("Pedro", "Baltazar", , "pedrobtz@gmail.com", role = c("aut", "cre", "cph")),
+    person("Chris", "Doty-Humphrey", role = c("ctb", "cph"),
+           comment = "PractRand library, src/practrand/")
+  )
 Description: Runs the 'PractRand' statistical test suite for random number
     generators by Chris Doty-Humphrey from R. Bits from a generator are
     tested at doubling lengths, and the result reports the length at which

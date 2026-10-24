@@ -1,0 +1,597 @@
+diff -ruN a/include/PractRand/config.h b/include/PractRand/config.h
+--- a/include/PractRand/config.h
++++ b/include/PractRand/config.h
+@@ -134,4 +134,12 @@
+ #endif//defined _MSC_VER && _M_IX86_FP > 0
+ 
+ 
++// Modified for the zurngtest R package: R forbids writing to stdout from
++// compiled code, so library diagnostics print nothing.
++namespace PractRand {
++	namespace Internals {
++		inline int no_printf(const char *, ...) { return 0; }
++	}
++}
++
+ #endif //__PRACTRAND_CONFIG_H__
+diff -ruN a/src/non_uniform.cpp b/src/non_uniform.cpp
+--- a/src/non_uniform.cpp
++++ b/src/non_uniform.cpp
+@@ -131,21 +131,21 @@
+ 				_secondary_gaussian_table[GAUSSIAN_CDF_TABLE_SIZE - 1] = (math_pvalue_to_normaldist((GAUSSIAN_CDF_TABLE_SIZE - 0.5) / GAUSSIAN_CDF_TABLE_SIZE) - math_pvalue_to_normaldist((GAUSSIAN_CDF_TABLE_SIZE - 1.0) / GAUSSIAN_CDF_TABLE_SIZE)) * scale;
+ 				scale *= 0.5;
+ 				for (long i = 1; i < GAUSSIAN_CDF_TABLE_SIZE - 1; i++) _secondary_gaussian_table[i] = (math_pvalue_to_normaldist((i + 1.0) / GAUSSIAN_CDF_TABLE_SIZE) - math_pvalue_to_normaldist((i + 0.0) / GAUSSIAN_CDF_TABLE_SIZE)) * scale;
+-				std::printf("static const float primary_gaussian_cdf_table[GAUSSIAN_CDF_TABLE_SIZE] = {\n");
++				PractRand::Internals::no_printf("static const float primary_gaussian_cdf_table[GAUSSIAN_CDF_TABLE_SIZE] = {\n");
+ 				for (long i = 0; i < GAUSSIAN_CDF_TABLE_SIZE; i++) {
+-					if ((i % 32) == 0) std::printf("\t");
+-					std::printf("%+.8f, ", _primary_gaussian_table[i]);
+-					if ((i % 32) == 31) std::printf("\n");
++					if ((i % 32) == 0) PractRand::Internals::no_printf("\t");
++					PractRand::Internals::no_printf("%+.8f, ", _primary_gaussian_table[i]);
++					if ((i % 32) == 31) PractRand::Internals::no_printf("\n");
+ 				}
+-				std::printf("};\n");
+-				std::printf("static const float secondary_gaussian_cdf_table[GAUSSIAN_CDF_TABLE_SIZE] = {\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static const float secondary_gaussian_cdf_table[GAUSSIAN_CDF_TABLE_SIZE] = {\n");
+ 				for (long i = 0; i < GAUSSIAN_CDF_TABLE_SIZE; i++) {
+ 					enum {VALUES_PER_LINE = 32};
+-					if ((i % VALUES_PER_LINE) == 0) std::printf("\t");
+-					std::printf("%+.8g, ", _secondary_gaussian_table[i]);
+-					if ((i % VALUES_PER_LINE) == VALUES_PER_LINE-1) std::printf("\n");
++					if ((i % VALUES_PER_LINE) == 0) PractRand::Internals::no_printf("\t");
++					PractRand::Internals::no_printf("%+.8g, ", _secondary_gaussian_table[i]);
++					if ((i % VALUES_PER_LINE) == VALUES_PER_LINE-1) PractRand::Internals::no_printf("\n");
+ 				}
+-				std::printf("};\n");
++				PractRand::Internals::no_printf("};\n");
+ 			}
+ 			//*/
+ 
+@@ -388,14 +388,14 @@
+ 					// assumes that f is cast from an Sint64
+ 					gaussian_table_order0[i] = (low + high) * 0.5;
+ 					gaussian_table_order1[i] = (high - low) * 0.5 * std::ldexp(1.0, -63);
+-					//std::printf("%d, %f, %f, %f\n", i, low, mid, high);
++					//PractRand::Internals::no_printf("%d, %f, %f, %f\n", i, low, mid, high);
+ 				}
+-				std::printf("static double gaussian_table_order0[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", _gaussian_table_order0[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
+-				std::printf("static double gaussian_table_order1[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", _gaussian_table_order1[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order0[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", _gaussian_table_order0[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order1[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", _gaussian_table_order1[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
+ 			}
+ 			//*/
+ 			int index = count_ones64(raw64_b);
+@@ -497,17 +497,17 @@
+ 					gaussian_table_order0[i] = mid;
+ 					gaussian_table_order1[i] = (0.5 * high - 0.5 * low) * std::ldexp(1.0, -63);
+ 					gaussian_table_order2[i] = (0.5 * low + 0.5 * high - mid) * std::ldexp(1.0, -126);
+-					//std::printf("%d, %f, %f, %f\n", i, low, mid, high);
++					//PractRand::Internals::no_printf("%d, %f, %f, %f\n", i, low, mid, high);
+ 				}
+-				std::printf("static double gaussian_table_order0[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order0[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
+-				std::printf("static double gaussian_table_order1[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order1[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
+-				std::printf("static double gaussian_table_order2[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order2[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order0[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order0[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order1[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order1[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order2[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order2[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
+ 			}
+ 			//*/
+ 			int index = count_ones64(raw64_b);
+@@ -621,18 +621,18 @@
+ 					gaussian_table_order2[i] = std::ldexp((9.0 / 16) * (low + high - lowmid - midhigh), -126);
+ 					gaussian_table_order3[i] = std::ldexp((9.0 / 16) * (high-low) - (27.0/16) * (midhigh - lowmid), -189);
+ 				}
+-				std::printf("static double gaussian_table_order0[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order0[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
+-				std::printf("static double gaussian_table_order1[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order1[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
+-				std::printf("static double gaussian_table_order2[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order2[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
+-				std::printf("static double gaussian_table_order3[65] = {");
+-				for (long i = 0; i < 65; i++) std::printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order3[i], i != 64 ? ", " : "\n");
+-				std::printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order0[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order0[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order1[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order1[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order2[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order2[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
++				PractRand::Internals::no_printf("static double gaussian_table_order3[65] = {");
++				for (long i = 0; i < 65; i++) PractRand::Internals::no_printf("%s%22.16g%s", i % 4 ? "" : "\n\t", gaussian_table_order3[i], i != 64 ? ", " : "\n");
++				PractRand::Internals::no_printf("};\n");
+ 			}
+ 			//*/
+ 			double f = static_cast<Sint64>(raw64_a);
+@@ -955,26 +955,26 @@
+ 				double slow_rate = 1.0 - retry_rate - fast_rate - tail_rate;
+ 				double success_rate2 = fast_rate + slow_rate + tail_rate;
+ 				inited = true;
+-				std::printf("ziggurat initialized\n");
+-				std::printf("%d stripes\n", int(NUM_STRIPES));
+-				std::printf("%.2f%% fast path rate\n", 100 * fast_rate);
+-				std::printf("%.2f%% slow path rate\n", 100 * slow_rate);
+-				std::printf("%.2f%% tail path rate\n", 100 * tail_rate);
+-				std::printf("%.2f%% retry rate\n", 100 * retry_rate);
+-				std::printf("%g deviation (%s)\n", area_deviation, area_deviation < 1e-15 ? "near-perfect" : area_deviation < 1e-13 ? "very good" : area_deviation < 1e-9 ? "good" : area_deviation < 1e-7 ? "mediocre" : area_deviation < 1e-4 ? "poor" : area_deviation < 0.01 ? "BAD" : area_deviation < 0.1 ? "VERY BAD" : "COMPLETE FAILURE");
+-				std::printf("refinement took %ld steps (gives up at 1B)\n", refinement_steps);
+-				std::printf("FP_type stripe_width[%d] = {", NUM_STRIPES+1);
+-				for (int i = 0; i <= NUM_STRIPES; i++) std::printf("%s%18.16g%s", i % 4 == 0 ? "\n\t" : "", stripe_width[i], i != NUM_STRIPES - 0 ? ", " : "");
+-				std::printf("\n};\n");
++				PractRand::Internals::no_printf("ziggurat initialized\n");
++				PractRand::Internals::no_printf("%d stripes\n", int(NUM_STRIPES));
++				PractRand::Internals::no_printf("%.2f%% fast path rate\n", 100 * fast_rate);
++				PractRand::Internals::no_printf("%.2f%% slow path rate\n", 100 * slow_rate);
++				PractRand::Internals::no_printf("%.2f%% tail path rate\n", 100 * tail_rate);
++				PractRand::Internals::no_printf("%.2f%% retry rate\n", 100 * retry_rate);
++				PractRand::Internals::no_printf("%g deviation (%s)\n", area_deviation, area_deviation < 1e-15 ? "near-perfect" : area_deviation < 1e-13 ? "very good" : area_deviation < 1e-9 ? "good" : area_deviation < 1e-7 ? "mediocre" : area_deviation < 1e-4 ? "poor" : area_deviation < 0.01 ? "BAD" : area_deviation < 0.1 ? "VERY BAD" : "COMPLETE FAILURE");
++				PractRand::Internals::no_printf("refinement took %ld steps (gives up at 1B)\n", refinement_steps);
++				PractRand::Internals::no_printf("FP_type stripe_width[%d] = {", NUM_STRIPES+1);
++				for (int i = 0; i <= NUM_STRIPES; i++) PractRand::Internals::no_printf("%s%18.16g%s", i % 4 == 0 ? "\n\t" : "", stripe_width[i], i != NUM_STRIPES - 0 ? ", " : "");
++				PractRand::Internals::no_printf("\n};\n");
+ #if defined ENABLE_TRAPEZOIDISM
+-				std::printf("FP_type stripe_extra_width[%d] = {", NUM_STRIPES);
+-				for (int i = 0; i < NUM_STRIPES; i++) std::printf("%s%18.16g%s", i % 4 == 0 ? "\n\t" : "", stripe_extra_width[i], i != NUM_STRIPES - 1 ? ", " : "");
+-				std::printf("\n};\n");
++				PractRand::Internals::no_printf("FP_type stripe_extra_width[%d] = {", NUM_STRIPES);
++				for (int i = 0; i < NUM_STRIPES; i++) PractRand::Internals::no_printf("%s%18.16g%s", i % 4 == 0 ? "\n\t" : "", stripe_extra_width[i], i != NUM_STRIPES - 1 ? ", " : "");
++				PractRand::Internals::no_printf("\n};\n");
+ #endif
+-				std::printf("FP_type stripe_y[%d] = {", NUM_STRIPES);
+-				for (int i = 0; i < NUM_STRIPES; i++) std::printf("%s%18.16g%s", i % 4 == 0 ? "\n\t" : "", stripe_y[i], i != NUM_STRIPES - 1 ? ", " : "");
+-				std::printf("\n};\n");
+-				std::printf("FP_type tail_area = %.16g;\n", tail_area);
++				PractRand::Internals::no_printf("FP_type stripe_y[%d] = {", NUM_STRIPES);
++				for (int i = 0; i < NUM_STRIPES; i++) PractRand::Internals::no_printf("%s%18.16g%s", i % 4 == 0 ? "\n\t" : "", stripe_y[i], i != NUM_STRIPES - 1 ? ", " : "");
++				PractRand::Internals::no_printf("\n};\n");
++				PractRand::Internals::no_printf("FP_type tail_area = %.16g;\n", tail_area);
+ 			}
+ #endif//GENERATE_ZIGGURAT_STUFF
+ 		};
+diff -ruN a/src/platform_specifics.cpp b/src/platform_specifics.cpp
+--- a/src/platform_specifics.cpp
++++ b/src/platform_specifics.cpp
+@@ -207,17 +207,17 @@
+ 				r = RegSetValueExA(key, "seed", 0, REG_BINARY, buffer, TARGET_SIZE);
+ 			}
+ 			if (r != ERROR_SUCCESS) continue;
+-			//std::printf("using seed (%02x%02x)\n", buffer[1], buffer[0]);
++			//PractRand::Internals::no_printf("using seed (%02x%02x)\n", buffer[1], buffer[0]);
+ 			rng->add_entropy_N(buffer, size);
+ 			if (size > TARGET_SIZE) size = TARGET_SIZE;
+ 			rng->flush_buffers();
+-			//std::printf("buffers flushed\n");
++			//PractRand::Internals::no_printf("buffers flushed\n");
+ 			for (unsigned int i = 0; i < size; i++) buffer[i] ^= rng->raw8();
+ 			for (unsigned int i = size; i < TARGET_SIZE; i++) buffer[i] = rng->raw8();
+-			//std::printf("attempting to set new seed (%02x%02x)\n", buffer[1], buffer[0]);
++			//PractRand::Internals::no_printf("attempting to set new seed (%02x%02x)\n", buffer[1], buffer[0]);
+ 			r = RegSetValueExA(key, "seed", 0, REG_BINARY, buffer, TARGET_SIZE);
+ 			if (r != ERROR_SUCCESS) continue;
+-			//std::printf("successfully set new seed\n");
++			//PractRand::Internals::no_printf("successfully set new seed\n");
+ 			break;
+ 		}
+ 		if (key) {
+diff -ruN a/src/rand.cpp b/src/rand.cpp
+--- a/src/rand.cpp
++++ b/src/rand.cpp
+@@ -7,6 +7,7 @@
+ #include <iostream>
+ #include <sstream>
+ #include <cstdlib>
++#include <stdexcept>
+ 
+ #include "PractRand/config.h"
+ #include "PractRand/rng_basics.h"
+@@ -28,9 +29,8 @@
+ 	void issue_error ( const char *msg) {
+ 		if (error_callback) error_callback(msg);
+ 		else {
+-			if (msg) std::fprintf(stderr, "%s\n", msg);
+-			std::fprintf(stderr, "an error occurred, aborting\n");
+-			std::exit(1);
++			// Modified for the zurngtest R package: throw rather than exit.
++			throw std::runtime_error(msg ? msg : "PractRand internal error");
+ 		}
+ 	}
+ 	void hook_error_handler(void (*callback)(const char *msg)) {
+diff -ruN a/src/tests_core.cpp b/src/tests_core.cpp
+--- a/src/tests_core.cpp
++++ b/src/tests_core.cpp
+@@ -337,7 +337,7 @@
+ 		dy = y2 - y1;//dy >= 0
+ 		low_a = dy / dx;//should be a semi-large positive number
+ 		if (low_a < 0) {
+-			std::printf("%s   dy:%f  dx:%f  \n", raw->name, dy, dx);
++			PractRand::Internals::no_printf("%s   dy:%f  dx:%f  \n", raw->name, dy, dx);
+ 			issue_error("calibration data has negative slope for low region?");
+ 		}
+ 		if (low_a > 100) low_a = 100;//I'd rather not have it be THAT large, even if the data supports it... maybe?
+@@ -3171,7 +3171,7 @@
+ 		}
+ 		calib_mean *= calib_step; calib_dev *= calib_step;
+ 		calib_dev = std::sqrt(calib_dev - calib_mean * calib_mean);
+-		std::printf("\n %.15f %.15f \n", double(calib_mean + calib_e), double(calib_dev));*/
++		PractRand::Internals::no_printf("\n %.15f %.15f \n", double(calib_mean + calib_e), double(calib_dev));*/
+ 		//sum_s = std::log(sum_s) / std::log(2.0);
+ 		sum_s -= num_s * 4.162737902123020;
+ 		sum_s /= 9.308158403091918;
+@@ -3602,14 +3602,14 @@
+ 		}
+ 	}
+ 	if (best == -1) {
+-		std::printf("BRank::pick_next_size : best is -1\n");
+-		std::exit(0);
++		PractRand::Internals::no_printf("BRank::pick_next_size : best is -1\n");
++		PractRand::issue_error();
+ 	}
+ 	size_index = best;
+ 	in_progress = new Internals::XBG_helpers::BitMatrix(ps[size_index].size, ps[size_index].size);
+ 	if (!in_progress) {
+-		std::printf("BRank::pick_next_size : new BitMatrix failed\n");
+-		std::exit(0);
++		PractRand::Internals::no_printf("BRank::pick_next_size : new BitMatrix failed\n");
++		PractRand::issue_error();
+ 	}
+ 	blocks_in_progress = 0;
+ }
+@@ -3753,7 +3753,7 @@
+ }
+ void PractRand::Tests::BRank::get_results(std::vector<TestResult> &results) {
+ 	if (total_count < 1) return;
+-	//std::printf("\ncurrent size: %d\n", current_size);
++	//PractRand::Internals::no_printf("\ncurrent size: %d\n", current_size);
+ 	if (false) {// chi-squared test
+ 		enum { REDUCED_SIZE = 6 };
+ 		double probs2[REDUCED_SIZE];
+@@ -3816,7 +3816,7 @@
+ void PractRand::Tests::BRank::finish_matrix() {
+ 	long result = (current_size > 1000) ? in_progress->large_normalize_and_rank() : in_progress->normalize_and_rank();
+ 	result = current_size - result;
+-	//std::printf("\n                      finished: %lld (result %d)\n", current_size, result);
++	//PractRand::Internals::no_printf("\n                      finished: %lld (result %d)\n", current_size, result);
+ 	if (first_fail_size == 0 && result >= 10) {
+ 		first_fail_size = current_size;
+ 	}
+@@ -3844,7 +3844,7 @@
+ 		if (time_till_next_matrix > 0) {//throttle
+ 			Uint64 blocks_to_skip = (time_till_next_matrix + rate - 1) / rate;
+ 			if (blocks_to_skip > numblocks) blocks_to_skip = numblocks;
+-			//std::printf("\n                      skipping %lld KB\n", blocks_to_skip);
++			//PractRand::Internals::no_printf("\n                      skipping %lld KB\n", blocks_to_skip);
+ 			data += blocks_to_skip;
+ 			numblocks -= blocks_to_skip;
+ 			time_till_next_matrix -= rate * blocks_to_skip;
+@@ -3855,7 +3855,7 @@
+ 			blocks_needed -= blocks_in_progress;
+ 			Uint64 offset = (blocks_in_progress << TestBlock::SIZE_L2) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3);
+ 			if (numblocks < blocks_needed) {
+-				//std::printf("\n                      using %lld KB\n", numblocks);
++				//PractRand::Internals::no_printf("\n                      using %lld KB\n", numblocks);
+ 				//in_progress->raw_import(offset, &data[0].as64[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
+ 				in_progress->_import_words(offset, &data[0].as64[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
+ 				blocks_in_progress += numblocks;
+@@ -3864,8 +3864,8 @@
+ 				numblocks = 0;
+ 			}
+ 			else {
+-				//std::printf("\n                      using %lld KB\n", blocks_needed);
+-				//std::printf("\n                      finishing...\n");
++				//PractRand::Internals::no_printf("\n                      using %lld KB\n", blocks_needed);
++				//PractRand::Internals::no_printf("\n                      finishing...\n");
+ 				//in_progress->raw_import(offset, &data[0].as64[0], (bytes_needed - (blocks_in_progress << TestBlock::SIZE_L2)) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
+ 				in_progress->_import_words(offset, &data[0].as64[0], (bytes_needed - (blocks_in_progress << TestBlock::SIZE_L2)) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
+ 				finish_matrix();
+diff -ruN a/src/tests_other.cpp b/src/tests_other.cpp
+--- a/src/tests_other.cpp
++++ b/src/tests_other.cpp
+@@ -428,16 +428,16 @@
+ 			total_chance += chance;
+ 		}
+ 		mean += accum1; mean2 += accum2; mean3 += accum3;
+-		std::printf("\n mean = %.15f\n", double(mean));
+-		//std::printf("\n variance = %.15f\n", mean2 - mean * mean);
+-		//std::printf("\n variance = %.15f\n", mean3 + 2 * mean * expected - expected * expected - mean * mean);
+-		std::printf("\n variance = %.15f\n", double(mean3 - std::pow(mean - expected, 2.0)));
++		PractRand::Internals::no_printf("\n mean = %.15f\n", double(mean));
++		//PractRand::Internals::no_printf("\n variance = %.15f\n", mean2 - mean * mean);
++		//PractRand::Internals::no_printf("\n variance = %.15f\n", mean3 + 2 * mean * expected - expected * expected - mean * mean);
++		PractRand::Internals::no_printf("\n variance = %.15f\n", double(mean3 - std::pow(mean - expected, 2.0)));
+ 		//long double variance = mean3 - std::pow(mean - expected, 2.0);
+ 		//long double cLK = 0.7 - 0.8 / 16 + (4 + 32.0 / 16) / 15.0 / std::pow(1024 * 1024 * 1024, 3.0 / 16);
+-		//std::printf("\n modified variance = %.15f\n", variance * cLK * cLK);
+-		std::printf("\n chance = %.15f\n", double(total_chance));
+-		std::printf("\n (1-chance_modifier) = %.15g\n", double(1 - chance_modifier));
+-		std::exit(0);
++		//PractRand::Internals::no_printf("\n modified variance = %.15f\n", variance * cLK * cLK);
++		PractRand::Internals::no_printf("\n chance = %.15f\n", double(total_chance));
++		PractRand::Internals::no_printf("\n (1-chance_modifier) = %.15g\n", double(1 - chance_modifier));
++		PractRand::issue_error();
+ 	}
+ }
+ void PractRand::Tests::GapUniversal1::handle_gap(Uint64 gap_value) {
+@@ -644,7 +644,7 @@
+ 	double mean_square = sum2 - guess * guess + 2 * guess * mean_log2;
+ 	double variance1 = mean_square - mean_log2*mean_log2;
+ 	double variance2 = sum2 - sum * sum;
+-	if (!(i & (i - 1))) std::printf("\n %6d:  %.12f %.12f        dev: %.7f", i, mean_log2, mean_log2 * std::log(2.0), variance2);
++	if (!(i & (i - 1))) PractRand::Internals::no_printf("\n %6d:  %.12f %.12f        dev: %.7f", i, mean_log2, mean_log2 * std::log(2.0), variance2);
+ 	}
+ 	//*/
+ }
+@@ -1039,7 +1039,7 @@
+ 
+ 		if (expected_count < 100) return;
+ 		results.push_back(TestResult("LBGP:sanity", norm, norm, TestResult::TYPE_RAW_NORMAL, 1.0));
+-		//std::printf("LBGP: tcount: %lld   warmup: %lld   log2(pos): %f\n", total_count, warmup, std::log2(double(position)));
++		//PractRand::Internals::no_printf("LBGP: tcount: %lld   warmup: %lld   log2(pos): %f\n", total_count, warmup, std::log2(double(position)));
+ 	}
+ 
+ 	Uint64 match_level_counts[MATCH_LEVELS];
+@@ -1117,7 +1117,7 @@
+ 
+ 	//results.push_back(TestResult("LG64P:thits", total_hits, 0, TestResult::TYPE_UNKNOWN, 1.0));
+ 	//results.push_back(TestResult("LG64P:tmisses", total_misses, 0, TestResult::TYPE_UNKNOWN, 1.0));
+-	std::printf("LCG64P:thits: %lld   misses: %lld   warmup: %lld\n", total_hits, total_misses, warmup);
++	PractRand::Internals::no_printf("LCG64P:thits: %lld   misses: %lld   warmup: %lld\n", total_hits, total_misses, warmup);
+ 
+ 	//if (position < 1ull << 28) return;//not trying to deal with short tests yet
+ 	if (total_hits < 10) return;
+@@ -2172,7 +2172,7 @@
+ 		//else e = gap_log2_expected(std::pow(0.5, 20)) + L - THRESHOLD;
+ 		if (L < THRESHOLD) e = gap_L2_expected_lookup[L - 1];
+ 		else e = gap_L2_expected_lookup[THRESHOLD - 1] + L - THRESHOLD;
+-		//std::printf("%d %.15f\n", i, e);
++		//PractRand::Internals::no_printf("%d %.15f\n", i, e);
+ 		platter[i].gap_expected_inverse = std::pow(0.5, e);
+ 		//platter[i].gap_expected_inverse = std::pow(0.5, L-1);
+ 	}
+@@ -2431,7 +2431,7 @@
+ 			double per_sample_variance;
+ 			if (L <= NUM_PRECALCED) per_sample_variance = precalced_per_sample_variance[L - 1];
+ 			else per_sample_variance = precalced_per_sample_variance[NUM_PRECALCED - 1];
+-			//std::printf("%2d %2d %.15f\n", e, int(L), per_sample_variance);
++			//PractRand::Internals::no_printf("%2d %2d %.15f\n", e, int(L), per_sample_variance);
+ 			//double adjusted_variance = per_sample_variance * p.gap_hits * cLK * cLK;
+ 			double adjusted_variance = per_sample_variance * (p.gap_hits * 1.0);// -p.gap_warmed_up * 0);
+ 
+@@ -2563,27 +2563,27 @@
+ 			for (int p = skip_platters; p <= MAX_EXP; p++) cross_probs[p] = std::pow(0.5, p + 1 - (p == MAX_EXP) - skip_platters);
+ 			if (false) {
+ 				for (int p = skip_platters; p <= MAX_EXP; p++) {
+-					std::printf("%2d:", p);
++					PractRand::Internals::no_printf("%2d:", p);
+ 					if (cross_counts[p] >> 32) {
+-						std::printf("%8X", Uint32(cross_counts[p] >> 32));
+-						std::printf("%08X", Uint32(cross_counts[p]));
++						PractRand::Internals::no_printf("%8X", Uint32(cross_counts[p] >> 32));
++						PractRand::Internals::no_printf("%08X", Uint32(cross_counts[p]));
+ 					}
+-					else std::printf("        %8X", Uint32(cross_counts[p]));
+-					std::printf("    %.15f\n", cross_probs[p]);
++					else PractRand::Internals::no_printf("        %8X", Uint32(cross_counts[p]));
++					PractRand::Internals::no_printf("    %.15f\n", cross_probs[p]);
+ 				}
+ 			}
+ 			//int bins = MAX_EXP + 1 - skip_platters;
+ 			int bins = simplify_prob_table(MAX_EXP + 1 - skip_platters, total_samples / 10.0, &cross_probs[skip_platters], &cross_counts[skip_platters], true, true);
+ 			if (false) {
+-				std::printf("---\n");
++				PractRand::Internals::no_printf("---\n");
+ 				for (int p = skip_platters; p < bins; p++) {
+-					std::printf("%2d:", p);
++					PractRand::Internals::no_printf("%2d:", p);
+ 					if (cross_counts[p] >> 32) {
+-						std::printf("%8X", Uint32(cross_counts[p] >> 32));
+-						std::printf("%08X", Uint32(cross_counts[p]));
++						PractRand::Internals::no_printf("%8X", Uint32(cross_counts[p] >> 32));
++						PractRand::Internals::no_printf("%08X", Uint32(cross_counts[p]));
+ 					}
+-					else std::printf("        %8X", Uint32(cross_counts[p]));
+-					std::printf("    %.15f\n", cross_probs[p]);
++					else PractRand::Internals::no_printf("        %8X", Uint32(cross_counts[p]));
++					PractRand::Internals::no_printf("    %.15f\n", cross_probs[p]);
+ 				}
+ 			}
+ 			double raw = PractRand::Tests::g_test(bins, &cross_probs[skip_platters], &cross_counts[skip_platters]);
+@@ -3057,8 +3057,8 @@
+ 		if (buffer[i] > high) high = buffer[i];
+ 	}
+ 	mean /= BUFFER_SIZE - 1;//expected mean is 2**64 / (BUFFER_SIZE + 1), I think
+-	//std::printf("\nmean=%.6f   low=%.0f   high=%.0f", mean, low, high);
+-	//std::printf("\nlog2(mean)=%.6f   log2(low)=%.6f   log2(high)=%.6f\n", std::log2(mean), std::log2(low), std::log2(high));
++	//PractRand::Internals::no_printf("\nmean=%.6f   low=%.0f   high=%.0f", mean, low, high);
++	//PractRand::Internals::no_printf("\nlog2(mean)=%.6f   log2(low)=%.6f   log2(high)=%.6f\n", std::log2(mean), std::log2(low), std::log2(high));
+ 	*/
+ 	int duplicates = 0;
+ 	//std::vector<std::pair<Uint64, Uint64> > repeated_values;
+@@ -3076,10 +3076,10 @@
+ 	for (int i = 0; i < repeated_values.size(); i++) {
+ 		//if (repeated_values[i].second > 2 || repeated_values[i].first > 1ull << (41 + 2) || repeated_values[i].first < 1ull << (41 - 10)) 
+ 		if (repeated_values[i].second > 2) 
+-			std::printf("  num = %2d   log2(value) = %.6f   value = %13.0f\n\n", int(repeated_values[i].second), double(std::log2(repeated_values[i].first)), double(repeated_values[i].first));
++			PractRand::Internals::no_printf("  num = %2d   log2(value) = %.6f   value = %13.0f\n\n", int(repeated_values[i].second), double(std::log2(repeated_values[i].first)), double(repeated_values[i].first));
+ 		//auto it = dup_value_counts.find()
+ 		Uint64 total = dup_value_counts[repeated_values[i].first] += repeated_values[i].second + (1ull << 32);
+-		if (total > repeated_values[i].second) std::printf("  num = %2d   log2(value) = %.6f   value = %13.0f (combined from %d passes)\n\n", int(total), double(std::log2(repeated_values[i].first)), double(repeated_values[i].first), int(total >> 32));
++		if (total > repeated_values[i].second) PractRand::Internals::no_printf("  num = %2d   log2(value) = %.6f   value = %13.0f (combined from %d passes)\n\n", int(total), double(std::log2(repeated_values[i].first)), double(repeated_values[i].first), int(total >> 32));
+ 	}
+ 	*/
+ 	if (duplicates >= MAX_DUPLICATES) duplicates = MAX_DUPLICATES - 1;
+@@ -4121,16 +4121,16 @@
+ 		}
+ 	}
+ 	if (count > 1 && !(count & (count-1))) {
+-		std::printf("\n");
+-		std::printf("sum_log obs ofs: %+.10Lf\n", (long double)score_sum_log / count / std::sqrt(double(buffer_size - 2)) + expected_log_offset);
+-		std::printf("sum_log exp ofs: %+.10Lf\n", expected_log_offset);
+-		std::printf("sum_log   delta: %+.12Lf\n", (long double)score_sum_log / count / std::sqrt((long double)(buffer_size - 2)));
+-		std::printf("revised obs ofs: %+.10Lf\n", score_sum_log / count / std::sqrt(double(buffer_size - 2)) + adjusted_expected_log2 - expected_log2);
+-		std::printf("revised exp ofs: %+.10Lf\n", expected_log2 * expected_log_offset);
+-		std::printf("sum_log obs dev: %.9Lf\n", (long double)std::sqrt(score_sum_log_sqr / count - (score_sum_log / count * score_sum_log / count)));
+-		std::printf("sum_log exp dev: %.9Lf\n", deviation);
+-		std::printf("count: %.0Lf\n\n", (long double)(count));
+-		//std::exit(0);
++		PractRand::Internals::no_printf("\n");
++		PractRand::Internals::no_printf("sum_log obs ofs: %+.10Lf\n", (long double)score_sum_log / count / std::sqrt(double(buffer_size - 2)) + expected_log_offset);
++		PractRand::Internals::no_printf("sum_log exp ofs: %+.10Lf\n", expected_log_offset);
++		PractRand::Internals::no_printf("sum_log   delta: %+.12Lf\n", (long double)score_sum_log / count / std::sqrt((long double)(buffer_size - 2)));
++		PractRand::Internals::no_printf("revised obs ofs: %+.10Lf\n", score_sum_log / count / std::sqrt(double(buffer_size - 2)) + adjusted_expected_log2 - expected_log2);
++		PractRand::Internals::no_printf("revised exp ofs: %+.10Lf\n", expected_log2 * expected_log_offset);
++		PractRand::Internals::no_printf("sum_log obs dev: %.9Lf\n", (long double)std::sqrt(score_sum_log_sqr / count - (score_sum_log / count * score_sum_log / count)));
++		PractRand::Internals::no_printf("sum_log exp dev: %.9Lf\n", deviation);
++		PractRand::Internals::no_printf("count: %.0Lf\n\n", (long double)(count));
++		//PractRand::issue_error();
+ 	}
+ }
+ void PractRand::Tests::BirthdayAlt::test_blocks(TestBlock *data, int numblocks) {
+@@ -6152,14 +6152,14 @@
+ 		double c = count[i];
+ 		double f = c / total;
+ 		double p = math_normaldist_pdf((i - avg) / dev) / dev;
+-		if (c) std::printf("%5d: %.15f    %.15f\n", i, f, p);
++		if (c) PractRand::Internals::no_printf("%5d: %.15f    %.15f\n", i, f, p);
+ 		total_error += std::fabs(f - p);
+ 		sum_p += p;
+ 	}
+-	std::printf("total: %.0f    mean: %.7f   dev: %.9f   err: %.9f\n", total, avg, dev, total_error);
+-	std::printf("sum_p: %.9f\n", sum_p);
+-	std::printf("blocks tested = %.0f GB, print_at = %.0f GB\n", double(blocks_tested >> 20), double(print_at >> 20));
+-	std::printf("\n");//*/
++	PractRand::Internals::no_printf("total: %.0f    mean: %.7f   dev: %.9f   err: %.9f\n", total, avg, dev, total_error);
++	PractRand::Internals::no_printf("sum_p: %.9f\n", sum_p);
++	PractRand::Internals::no_printf("blocks tested = %.0f GB, print_at = %.0f GB\n", double(blocks_tested >> 20), double(print_at >> 20));
++	PractRand::Internals::no_printf("\n");//*/
+ }
+ 
+ void PractRand::Tests::Coup32::init(PractRand::RNGs::vRNG *known_good) {
+@@ -7833,7 +7833,7 @@
+ 		Uint8 rawperm[8];
+ 		Uint8 used = 0;
+ 		if (i == 1736) {
+-			std::printf("");
++			PractRand::Internals::no_printf("");
+ 		}
+ 		int u = i;
+ 		int d;
+@@ -7852,7 +7852,7 @@
+ 			used |= 1 << td;
+ 			rawperm[x] = td;
+ 		}
+-		if (used != 255) std::printf("duplicated values\n");
++		if (used != 255) PractRand::Internals::no_printf("duplicated values\n");
+ 		int limited = _lperm8_8(rawperm);
+ 		lperm8_chances[limited] += 1.0 / fact8;
+ 	}
+@@ -7872,7 +7872,7 @@
+ 		int high_odds = lperm4_greaterthan[high] - lperm4_lessthan[high];
+ 		lperm8_greaterthan[i] = which ? lperm4_greaterthan[high] : lperm4_greaterthan[high] + lperm4_greaterthan[low] + 1;
+ 		lperm8_lessthan[i] = which ? lperm4_lessthan[high] + lperm4_lessthan[low] + 1 : lperm4_lessthan[high];
+-		//if (!which) std::printf("%3d (%d:%d): %.5f %d\n", i, low, high, observed_ratio, high_odds - low_odds);
++		//if (!which) PractRand::Internals::no_printf("%3d (%d:%d): %.5f %d\n", i, low, high, observed_ratio, high_odds - low_odds);
+ 	}
+ 	/*for (int i = 0; i < LPERM_BUCKETS; i++) {
+ 		int low = i & 127;
+@@ -7885,13 +7885,13 @@
+ 	}
+ 	double sum = 0;
+ 	for (int i = 0; i < 128; i++) sum += lperm8_chances[i];
+-	//std::printf("%f, ", sum);
++	//PractRand::Internals::no_printf("%f, ", sum);
+ 	sum = 0;
+ 	for (int i = 0; i < LPERM_BUCKETS; i++) sum += lperm16_chances[i];*/
+-	//std::printf("%f\n", sum);
++	//PractRand::Internals::no_printf("%f\n", sum);
+ 	//double lowest = 1.0;
+ 	//for (int i = 0; i < 128; i++) if (lowest > lperm8_chances[i]) lowest = lperm8_chances[i];
+-	//std::printf("%f\n", lowest);
++	//PractRand::Internals::no_printf("%f\n", lowest);
+ 	/*
+ 		lperm8 chances are exact, but lperm16 chances are a crude approximation
+ 	*/
+@@ -7911,32 +7911,32 @@
+ 		int high_odds = lperm8_greaterthan[high] - lperm8_lessthan[high];
+ 		int odds = high_odds - low_odds;
+ 		//if (odds < 0) { continue; odds = -odds; observed_ratio = 1 - observed_ratio; }
+-		//std::printf("%f\n", observed_ratio);
++		//PractRand::Internals::no_printf("%f\n", observed_ratio);
+ 		if (std::fabs(observed_ratio - 0.5) > 0.2) {
+-			std::printf("");
++			PractRand::Internals::no_printf("");
+ 		}
+ 		odds += 30;
+ 		if (odds < 0 || odds >= 60) continue;
+ 		odds_count[odds]++;
+ 		odds_sum[odds] += observed_ratio;
+ 		odds_sum2[odds] += observed_ratio * observed_ratio;
+-		//if (!which) std::printf("%5d (%2x:%2x): %.6f %d\n", i, low, high, observed_ratio, high_odds - low_odds)
++		//if (!which) PractRand::Internals::no_printf("%5d (%2x:%2x): %.6f %d\n", i, low, high, observed_ratio, high_odds - low_odds)
+ 	}
+ 	for (int i = 0; i < 60; i++) {
+ 		if (odds_count[i]) {
+ 			double mean = odds_sum[i] / odds_count[i];
+ 			double meansqr = odds_sum2[i] / odds_count[i];
+-			std::printf("odds %+d: ratio %.8f +/- %.8f\n", i - 30, mean, std::sqrt(meansqr - mean * mean));
++			PractRand::Internals::no_printf("odds %+d: ratio %.8f +/- %.8f\n", i - 30, mean, std::sqrt(meansqr - mean * mean));
+ 		}
+ 	}
+ 	for (int i = 0; i < LPERM_BUCKETS / 2; i++) {
+ 		double observed_ratio = counts_[i] / double(counts_[i] + counts_[i ^ 16384]);
+-		std::printf("%.8f, ", observed_ratio);
++		PractRand::Internals::no_printf("%.8f, ", observed_ratio);
+ 		if ((i % 8) == 7) {
+-			std::printf("//%5d-%5d\n", i - 7, i);
++			PractRand::Internals::no_printf("//%5d-%5d\n", i - 7, i);
+ 		}
+ 	}
+-	std::printf("\n");*/
++	PractRand::Internals::no_printf("\n");*/
+ 
+ 	std::vector<double> lperm16_chances;
+ 	lperm16_chances.resize(LPERM_BUCKETS);
+@@ -8053,7 +8053,7 @@
+ 		Uint8 rawperm[8];
+ 		Uint8 used = 0;
+ 		if (i == 1736) {
+-			std::printf("");
++			PractRand::Internals::no_printf("");
+ 		}
+ 		int u = i;
+ 		int d;
+@@ -8072,7 +8072,7 @@
+ 			used |= 1 << td;
+ 			rawperm[x] = td;
+ 		}
+-		if (used != 255) std::printf("duplicated values\n");
++		if (used != 255) PractRand::Internals::no_printf("duplicated values\n");
+ 		int limited = _lperm8_8(rawperm);
+ 		lperm8_chances[limited] += 1.0 / fact8;
+ 	}

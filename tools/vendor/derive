@@ -1,0 +1,75 @@
+#!/bin/sh
+# Derive the vendored PractRand tree from the pinned archive and the patch
+# series, into the directory given. Run from the package root.
+#
+#   tools/vendor/derive <out-dir>              upstream plus every patch
+#   tools/vendor/derive <out-dir> --skip-first upstream plus every patch but
+#                                              the first (the verifier's canary)
+#   tools/vendor/derive <out-dir> --pristine   upstream with no patches
+#
+# The pin (archive URL, version and SHA-256) and the patch list are read from
+# src/practrand/PROVENANCE, so there is one place to change on an update.
+set -eu
+
+OUT=${1:?usage: tools/vendor/derive <out-dir> [--skip-first | --pristine]}
+SKIP_FIRST=0
+PRISTINE=0
+[ "${2:-}" = "--skip-first" ] && SKIP_FIRST=1
+[ "${2:-}" = "--pristine" ] && PRISTINE=1
+
+PROV="src/practrand/PROVENANCE"
+[ -f "$PROV" ] || { echo "missing $PROV" >&2; exit 1; }
+
+URL=$(awk '/^  Archive:/ {print $2}' "$PROV")
+EXPECTED=$(awk '/^  SHA-256:/ {print $2}' "$PROV")
+
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+# --retry, because this runs on every push in CI. Integrity does not rest on
+# the transport: the SHA-256 comparison below is what decides.
+curl -fsSL --retry 3 --retry-delay 2 --retry-connrefused \
+  -o "$WORK/practrand.zip" "$URL"
+ACTUAL=$(shasum -a 256 "$WORK/practrand.zip" | cut -d' ' -f1)
+if [ "$ACTUAL" != "$EXPECTED" ]; then
+  echo "FAIL: archive sha256 mismatch" >&2
+  echo "  expected $EXPECTED" >&2
+  echo "  actual   $ACTUAL" >&2
+  exit 1
+fi
+
+unzip -q "$WORK/practrand.zip" -d "$WORK/x"
+SRC="$WORK/x/PractRand"
+
+# The library only: its headers, its sources and the licence. tools/ (the
+# command-line programs, TestManager among them), doc/ and VisualC_net/ stay
+# out; tools/TestManager.h and tools/RNG_test.cpp are reference for the
+# package's own driver, not compiled.
+mkdir -p "$OUT"
+cp -R "$SRC/include" "$OUT/include"
+cp -R "$SRC/src" "$OUT/src"
+cp "$SRC/doc/license.txt" "$OUT/LICENSE"
+
+# The "NotRecommended" generators in RNGs/other/ are left out too. Upstream
+# says some were copied from web pages, forum posts and papers, with no
+# licence stated, and nothing else in the library includes or links them.
+rm -rf "$OUT/include/PractRand/RNGs/other" "$OUT/src/RNGs/other"
+
+# Upstream ships CRLF line endings, which R CMD check warns about in
+# C/C++ sources. Normalise every file to LF before patching; the patches are
+# written against the LF tree.
+find "$OUT" -type f -exec perl -pi -e 's/\r$//' {} +
+
+awk '/^  Local patches:/ {on = 1; next} on && /^ +[^ ]+\.patch$/ {print $1; next} on {exit}' \
+  "$PROV" > "$WORK/patches"
+[ "$PRISTINE" -eq 1 ] && : > "$WORK/patches"
+first=1
+while read -r p; do
+  if [ "$SKIP_FIRST" -eq 1 ] && [ "$first" -eq 1 ]; then
+    first=0
+    continue
+  fi
+  first=0
+  patch -s -p1 -d "$OUT" < "tools/patches/$p"
+done < "$WORK/patches"
+find "$OUT" \( -name '*.orig' -o -name '*.rej' \) -delete
