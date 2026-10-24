@@ -1,0 +1,23 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+name: vendor
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# src/practrand/ must be the pinned PractRand archive plus exactly the patch
+# series, and a pull request that changes it must update its PROVENANCE.
+# There is no vendor-upstream.yml: it watches GitHub releases, and PractRand
+# is released on SourceForge.
+jobs:
+  vendor:
+    uses: pedrobtz/r-actions/.github/workflows/vendor.yml@v1
+    with:
+      vendor-dir: src/practrand
+      verify: tools/vendor/verify
+      must-update: |
+        src/practrand/PROVENANCE
