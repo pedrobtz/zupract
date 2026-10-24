@@ -29,9 +29,12 @@ test_that("the shared library exports only R_init_zurngtest", {
   }
   # libstdc++ declares namespace std with default visibility, so the
   # instantiations of std::vector, std::string and the like that the library
-  # uses stay exported under -fvisibility=hidden. They are not the package's
-  # symbols; every other one must be hidden.
-  std_symbol <- "^_Z(T[ISV])?N?K?(St|9__gnu_cxx)"
+  # uses stay exported under -fvisibility=hidden, along with the inline
+  # placement operator new and delete from <new>. They are not the
+  # package's symbols; every other one must be hidden. The pattern matches
+  # mangled names in std or __gnu_cxx, including their typeinfo, guard
+  # variables and local entities.
+  std_symbol <- "^_Z((T[A-Z]|GVZ?|Z)?N?[rVKRO]*(St|9__gnu_cxx)|(nw|na|dl|da))"
   exported <- nm_symbols(args)
   expect_equal(
     grep(std_symbol, exported, value = TRUE, invert = TRUE),
@@ -40,6 +43,10 @@ test_that("the shared library exports only R_init_zurngtest", {
 })
 
 test_that("compiled code links nothing that writes to the console or ends R", {
+  # covr builds with --coverage, which links libgcov, and libgcov writes to
+  # stderr and calls exit() and abort(). The package's own code is checked on
+  # every other leg.
+  skip_if(identical(Sys.getenv("R_COVR"), "true"), "covr links libgcov")
   banned <- c(
     "printf",
     "vprintf",
