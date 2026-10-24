@@ -133,7 +133,7 @@ test_that("pract_test()'s batteries are the ones zurngtest_info() reports", {
 
 test_that("the expanded battery runs, with NA for results without a p-value", {
   skip_on_cran() # about 3 s and 400 MB
-  res <- quick_test(
+  res <- pract_test(
     repeating(2^16),
     battery = "expanded",
     min_bytes = 2^16,
@@ -152,7 +152,7 @@ test_that("an error PractRand raises ends the run with a warning", {
   # NS3 raises "threshold dropped below 0" on this pattern when reporting
   # at 1 MiB.
   expect_warning(
-    res <- quick_test(
+    res <- pract_test(
       repeating(2^20),
       battery = "expanded",
       min_bytes = 2^16,
