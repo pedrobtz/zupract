@@ -14,6 +14,7 @@ Vendored dependency: PractRand, by Chris Doty-Humphrey
                  0003-portability.patch
                  0004-calibration-leak.patch
                  0005-no-terminate.patch
+                 0006-undefined-behaviour.patch
 
 src/practrand/ is tools/vendor/derive's output: upstream's include/ and src/
 trees without RNGs/other/, and doc/license.txt as LICENSE, with line endings
@@ -129,3 +130,31 @@ matches fails tools/vendor/derive instead of landing elsewhere. 0002 to
 0005 are hand-made: on an update, apply them in order to the new tree, fix
 the hunks that fail, and regenerate each with diff -ruN against the tree
 with the patches before it.
+
+0006-undefined-behaviour.patch removes the undefined behaviour that
+UndefinedBehaviorSanitizer and AddressSanitizer found when the core and
+expanded batteries ran (2026-10-24, R CMD check under CRAN's sanitizer
+builds, then a local harness over both batteries, word sizes 0, 8, 16, 32
+and 64, up to 16 MiB, on hc256 output and on a repeating pattern):
+
+  - PractRand's tests read across the blocks passed to them by indexing one
+    block's array past its end (data->as8[1024], data[0].as32[300]). The
+    memory is there, the blocks being contiguous, but indexing an array
+    past its end is undefined, and the sanitizers report it. Every
+    data->asN[x] and data[0].asN[x] in tests_core.cpp and tests_other.cpp
+    reads through a pointer to the first block instead,
+    reinterpret_cast<UintN *>(data)[x]: the same address, without the
+    out-of-bounds index. Mechanical: the edit is the two regular
+    expressions s/\bdata->as(8|16|32|64) *\[/.../ and
+    s/\bdata\[0\]\.as(8|16|32|64) *\[/.../, over both files.
+  - FPF's constructor checked count_low_zeroes32(1 << i) for i up to 32;
+    1 << 32 is undefined, and the result was discarded at 32 anyway.
+  - The histogram sorts in tests_other.cpp recursed, and the entry point
+    sorted, by a shift of 64 - SORT_HELPER_BITS - bits_already, which goes
+    negative on input with long runs of equal values (bits_already comes
+    from count_high_zeroes64 of the deltas, 64 when all are equal). With
+    no bits left for a histogram pass they fall back to std::sort.
+  - NearSeq3's do_scoring() read cdf[-1] when its threshold search ran out
+    (a heap-buffer-overflow under ASan), the same condition that later
+    raises "threshold dropped below 0"; the read is skipped, and the error
+    still follows.

@@ -13,6 +13,6 @@ zurngtest_info <- function() {
   list(
     version = unname(getNamespaceVersion("zurngtest")),
     practrand = .Call(zrt_practrand_version),
-    batteries = c("core", "expanded")
+    batteries = battery_names
   )
 }
