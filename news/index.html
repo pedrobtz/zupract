@@ -42,6 +42,11 @@
 <code><a href="../reference/pract_test.html">pract_test()</a></code> runs PractRand’s core or expanded battery on a source at doubling lengths and returns a <code>zurngtest_result</code>: one row per test result per length, with PractRand’s evaluation, the first failing length and a <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method in the style of <code>RNG_test</code>.</li>
 <li>
 <code><a href="../reference/pract_raw.html">pract_raw()</a></code> and <code><a href="../reference/pract_raw.html">pract_fun()</a></code> make sources from raw bytes, connections and R functions.</li>
+<li>
+<code><a href="../reference/pract_rng.html">pract_rng()</a></code> tests one of R’s own generators on its own bits, recovering the integers behind <code><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif()</a></code> where they exist, and leaves the session’s random number stream as it was.</li>
+<li>
+<code><a href="../reference/pract_interleave.html">pract_interleave()</a></code> combines sources word by word, for seeding studies.</li>
+<li>Packages can test a generator written in C through the registered callable <code>zurngtest_test_cfun()</code>, declared in <code>inst/include/zurngtest.h</code>.</li>
 </ul></div>
   </main></div>
 

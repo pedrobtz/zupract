@@ -19,3 +19,13 @@
   and
   [`pract_fun()`](https://pedrobtz.github.io/zurngtest/reference/pract_raw.md)
   make sources from raw bytes, connections and R functions.
+- [`pract_rng()`](https://pedrobtz.github.io/zurngtest/reference/pract_rng.md)
+  tests one of R’s own generators on its own bits, recovering the
+  integers behind [`runif()`](https://rdrr.io/r/stats/Uniform.html)
+  where they exist, and leaves the session’s random number stream as it
+  was.
+- [`pract_interleave()`](https://pedrobtz.github.io/zurngtest/reference/pract_interleave.md)
+  combines sources word by word, for seeding studies.
+- Packages can test a generator written in C through the registered
+  callable `zurngtest_test_cfun()`, declared in
+  `inst/include/zurngtest.h`.
