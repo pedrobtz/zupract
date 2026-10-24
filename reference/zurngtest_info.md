@@ -1,7 +1,7 @@
 # Information about zurngtest
 
 Reports the package version, the vendored 'PractRand' version and the
-test batteries available.
+test batteries zurngtest supports.
 
 ## Usage
 
@@ -11,9 +11,9 @@ zurngtest_info()
 
 ## Value
 
-A list with elements `version` (the package version), `practrand` (the
-version of the vendored 'PractRand' library) and `batteries` (the names
-of the test batteries).
+A list with elements `version` (the package version, a string),
+`practrand` (the version of the vendored 'PractRand' library, a string)
+and `batteries` (a character vector of battery names).
 
 ## Examples
 

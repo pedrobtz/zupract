@@ -1,12 +1,12 @@
 # zurngtest: Test Random Number Generators with 'PractRand'
 
 Runs the 'PractRand' statistical test suite for random number generators
-by Chris Doty-Humphrey from R. Bits from a generator are tested at
-doubling lengths, and the result reports the length at which the
-generator first fails. Bits can come from R's own generators, from an R
-function, from raw bytes or a connection, or from a C function
-registered by another package, which is the fast path for generator
-packages.
+by Chris Doty-Humphrey <https://pracrand.sourceforge.net/> from R. Bits
+from a generator are tested at doubling lengths, and the result reports
+the length at which the generator first fails. Bits can come from R's
+own generators, from an R function, from raw bytes or a connection, or
+from a C function registered by another package, which is the fast path
+for generator packages.
 
 ## See also
 
@@ -30,3 +30,6 @@ Other contributors:
 
 - Chris Doty-Humphrey (PractRand library, src/practrand/) \[contributor,
   copyright holder\]
+
+- Hongjun Wu (HC-256 reference implementation, from which
+  src/practrand/src/RNGs/hc256.cpp derives) \[copyright holder\]

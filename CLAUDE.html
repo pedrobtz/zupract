@@ -82,10 +82,10 @@
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>
 <p>To be completed as stages land; see <code>.agents/design.md</code>.</p>
 <ul><li>
-<code>src/practrand/</code> is the vendored PractRand library (see Vendored native code). <code>src/Makevars</code> lists its 21 objects, adds <code>-Ipractrand/include</code> and builds everything with hidden visibility.</li>
+<code>src/practrand/</code> is the vendored PractRand library (see Vendored native code). <code>src/Makevars</code> lists its 21 objects, adds <code>-Ipractrand/include</code> and builds everything with hidden visibility. Windows has no visibility flag; <code>src/zurngtest-win.def</code> limits the DLL’s exports to <code>R_init_zurngtest</code>.</li>
 <li>
 <code>src/init.cpp</code> is the R boundary: <code>R_init_zurngtest</code> (the one visible symbol) registers the <code>.Call</code> entry points, disables dynamic symbol lookup and forces symbols, so R code calls them through the objects <code>@useDynLib zurngtest, .registration = TRUE</code> creates, as in <code>.Call(zrt_practrand_version)</code>.</li>
-<li>PractRand’s <code>issue_error()</code> throws <code>std::runtime_error</code> (patch 0001). Every entry point that calls into PractRand must catch it before returning to R.</li>
+<li>PractRand’s <code>issue_error()</code> throws <code>std::runtime_error</code> (patch 0001). Every entry point that calls into PractRand must catch it before returning to R. No handler can catch a throw from a destructor or from static initialisation, so <code>issue_error()</code> must never be reachable there (patch 0005; see <code>src/practrand/PROVENANCE</code>).</li>
 </ul></div>
 <div class="section level2">
 <h2 id="invariants-that-are-easy-to-break">Invariants that are easy to break<a class="anchor" aria-label="anchor" href="#invariants-that-are-easy-to-break"></a></h2>
@@ -114,7 +114,7 @@
 <li>
 <strong>Borrow a conformance suite before writing one.</strong> Mainstream implementations in Python, Java, Go or Node usually ship a test corpus. Use it as an oracle rather than inventing cases by hand. Here the oracle is PractRand’s own <code>RNG_test</code> tool, built from the same sources in CI, plus generators with published failure lengths; neither is wired up yet.</li>
 <li>
-<strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> None yet.</li>
+<strong>Helpers live in <code>tests/testthat/helper-*.R</code>.</strong> <code>helper-symbols.R</code> reads the library’s exports (nm, or <code>objdump -p</code> on Windows) and undefined symbols, fails when the tool is missing or fails (outside CRAN), and builds the banned list from R’s own <code>tools:::so_symbol_names_table</code>.</li>
 <li>
 <strong>Keep the suite inside the CRAN time budget.</strong> The design budgets under 15 s, with short lengths only; long runs are CI-only.</li>
 </ul></div>
@@ -141,7 +141,7 @@
 <li>Edit <code>README.Rmd</code>, not the generated <code>README.md</code>.</li>
 <li>Keep prose simple and short. One idea per sentence.</li>
 <li>Wrap roxygen text at 80 characters and run <code>air format .</code> on R sources.</li>
-<li>Use <code>lower_snake_case</code>, and prefix internal native symbols with <code>&lt;pkg&gt;_</code>.</li>
+<li>Use <code>lower_snake_case</code>, and prefix internal native symbols with <code>zrt_</code> (design §3).</li>
 <li>Keep hard runtime dependencies at zero unless a recorded design decision says otherwise.</li>
 <li>Export and document public functions. Do not create roxygen topics for internal ones.</li>
 </ul></div>
@@ -173,7 +173,7 @@
 <div class="section level2">
 <h2 id="vendored-native-code">Vendored native code<a class="anchor" aria-label="anchor" href="#vendored-native-code"></a></h2>
 <p>PractRand 0.96 (C++), by Chris Doty-Humphrey, public domain with a CC0 fallback, from the SourceForge release archive (SHA-256 <code>e4caf7fd…</code>; no tag or commit exists upstream). <code>src/practrand/PROVENANCE</code> holds the pin, the patch list and the reasons for both; <code>inst/COPYRIGHTS</code> and <code>DESCRIPTION</code> credit the author.</p>
-<ul><li><p><code>tools/vendor/derive</code> rebuilds the tree from the archive and <code>tools/patches/</code>; <code>tools/vendor/update</code> writes it into <code>src/practrand/</code>; <code>tools/vendor/verify</code> (with <code>--canary</code>) is the gate <code>vendor.yaml</code> runs. Never edit <code>src/practrand/</code> by hand: change a patch and run <code>update</code>.</p></li>
+<ul><li><p><code>tools/vendor/derive</code> rebuilds the tree from the archive and <code>tools/patches/</code>; <code>tools/vendor/update</code> writes it into <code>src/practrand/</code>; <code>tools/vendor/verify</code> is the gate, and <code>tools/vendor/check</code> (the gate, then <code>verify --canary</code>) is what <code>vendor.yaml</code> runs. Patches apply with zero fuzz; <code>derive</code> exits 3 when one does not apply. Never edit <code>src/practrand/</code> by hand: change a patch and run <code>update</code>.</p></li>
 <li><p><code>0001-no-stdio.patch</code> is generated by <code>tools/vendor/make-no-stdio-patch</code>; <code>0002-cran-warnings.patch</code> is hand-made. Both are described in PROVENANCE.</p></li>
 <li><p>Measure warnings the way R CMD check does: build the tarball and run <code>R CMD check --as-cran</code> with <code>-Wall -pedantic</code> in <code>R_MAKEVARS_USER</code>. <code>devtools::check()</code> overrides <code>R_MAKEVARS_USER</code>, so its install log understates them. Judge them by R-devel’s list of significant warnings (<code>src/library/tools/R/check.R</code>), not the installed R’s, and compile as C++20 and for arm64 as well: R-devel adds C++20 deprecations, R builds C++20 by default, and CRAN’s macOS builds are arm64.</p></li>
 <li><p>Pin a stable upstream release, never <code>master</code> or a release candidate.</p></li>

@@ -7,6 +7,10 @@
 - **Chris Doty-Humphrey**. Contributor, copyright holder.  
   PractRand library, src/practrand/
 
+- **Hongjun Wu**. Copyright holder.  
+  HC-256 reference implementation, from which
+  src/practrand/src/RNGs/hc256.cpp derives
+
 ## Citation
 
 Source:
