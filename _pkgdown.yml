@@ -2,3 +2,20 @@ url: https://pedrobtz.github.io/zurngtest/
 template:
   bootstrap: 5
 
+reference:
+  - title: Testing
+    contents:
+      - pract_test
+  - title: Sources of bits
+    contents:
+      - pract_raw
+      - pract_rng
+      - pract_interleave
+  - title: The package
+    contents:
+      - zurngtest_info
+
+articles:
+  - title: Guides
+    contents:
+      - generator-packages

@@ -2,27 +2,140 @@
 # zurngtest
 
 <!-- badges: start -->
+
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![R-CMD-check](https://github.com/pedrobtz/zurngtest/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/pedrobtz/zurngtest/actions/workflows/R-CMD-check.yaml)
 [![coverage](https://raw.githubusercontent.com/pedrobtz/zurngtest/gh-pages/badges/coverage.svg)](https://github.com/pedrobtz/zurngtest/actions/workflows/coverage.yaml)
 <!-- badges: end -->
 
-The goal of zurngtest is to ...
+## Overview
+
+A random number generator can pass every statistical test you know of
+and still fail the one that matters for your simulation. The test suite
+that the current literature on generator design reports against is
+[PractRand](https://pracrand.sourceforge.net/), by Chris Doty-Humphrey:
+it tests a stream of bits at doubling lengths and reports the length at
+which a generator first fails. Until now, using it from R meant writing
+bytes to a file and running its command-line tool.
+
+zurngtest runs PractRand from R:
+
+- **PractRand’s own verdicts.** The core and expanded batteries of
+  PractRand 0.96, with its labels and thresholds unchanged. With the
+  core battery, `pract_test()` gives the results PractRand’s own
+  `RNG_test` gives for the same bytes, which a continuous-integration
+  job checks.
+- **R’s generators on their own bits.** `pract_rng()` recovers the
+  integers behind `runif()` for each `RNGkind()` where they exist, and
+  leaves the session’s random numbers as they were.
+- **Any source of bits.** Raw bytes, connections, R functions, and
+  combinations of them, such as two seeds of one generator interleaved.
+- **A fast path for generator packages.** Generators written in C hand
+  their words to PractRand directly, at about the speed of `RNG_test`.
+- **No dependencies beyond R.** PractRand is bundled, and zurngtest
+  imports only base R’s stats.
 
 ## Installation
 
-You can install the development version of zurngtest from [GitHub](https://github.com/) with:
+zurngtest is not on CRAN yet. Install the development version from
+GitHub:
 
 ``` r
 # install.packages("pak")
 pak::pak("pedrobtz/zurngtest")
 ```
 
-## Example
-
-This is a basic example which shows you how to solve a common problem:
+## Usage
 
 ``` r
 library(zurngtest)
-## basic example code
 ```
 
+The low byte of a linear congruential generator repeats every 256
+values. PractRand needs a few kilobytes to see it:
+
+``` r
+lcg_low_bits <- local({
+  x <- 1
+  function(n) {
+    out <- raw(n)
+    for (i in seq_len(n)) {
+      x <<- (1664525 * x + 1013904223) %% 2^32
+      out[i] <- as.raw(x %% 256)
+    }
+    out
+  }
+})
+pract_test(pract_fun(lcg_low_bits, bits = 8), min_bytes = 2^12, max_bytes = 2^14)
+#> PractRand 0.96 test of function lcg_low_bits, 8-bit words
+#> length= 4 kilobytes (2^12 bytes)
+#>   Test Name                         p-value       Evaluation
+#>   BCFN(2+0,13-9U)                   1.00e-28      FAIL !!!
+#>   DC6-9x1Bytes-1                    2.66e-56      FAIL !!!!
+#>   Gap-16:A                          0.00e+00      FAIL !!!!!!!!
+#>   Gap-16:B                          0.00e+00      FAIL !!!!!!!!
+#>   Gap-16:C                          1.00e+00      mildly suspicious
+#>   FPF/16:all                        0.00e+00      FAIL !!!!!!!
+#>   FPF/16:cross                      0.00e+00      FAIL !!!!!!!
+#>   mod3n(5):(2,9-6)                  5.23e-06      suspicious
+#>   ...and 4 test result(s) without anomalies
+#> Failed at 4 kilobytes (2^12 bytes), time= 0.3 seconds
+```
+
+R’s default generator, Mersenne-Twister, tested on its own 32-bit
+integers, does not fail over the first 4 megabytes. An “unusual” result
+now and then is what a good generator gives; a “FAIL” is not:
+
+``` r
+pract_test(pract_rng("Mersenne-Twister", seed = 1), min_bytes = 2^20, max_bytes = 2^22)
+#> PractRand 0.96 test of R's Mersenne-Twister generator (seed 1), its 32-bit integers
+#> length= 1 megabyte (2^20 bytes)
+#>   no anomalies in 80 test result(s)
+#> length= 2 megabytes (2^21 bytes)
+#>   no anomalies in 90 test result(s)
+#> length= 4 megabytes (2^22 bytes)
+#>   Test Name                         p-value       Evaluation
+#>   [Low1/32]DC6-9x1Bytes-1           0.00141       unusual
+#>   ...and 98 test result(s) without anomalies
+#> No failure, time= 1.2 seconds
+```
+
+Seeding schemes deserve testing too, since a combination of streams can
+fail where each stream passes. Two seeds of Mersenne-Twister,
+interleaved word by word, pass:
+
+``` r
+seeds <- pract_interleave(pract_rng(seed = 1), pract_rng(seed = 2))
+res <- pract_test(seeds, min_bytes = 2^20, max_bytes = 2^21)
+```
+
+The result is a data frame with one row per test and length, and the
+first failing length, if any, in its `failed_at` attribute:
+
+``` r
+attr(res, "failed_at")
+#> [1] NA
+head(as.data.frame(res), 3)
+#>     bytes            test   p_value evaluation
+#> 1 1048576 BCFN(2+0,13-7U) 0.7821732     normal
+#> 2 1048576 BCFN(2+1,13-7U) 0.9186383     normal
+#> 3 1048576 BCFN(2+2,13-8U) 0.6471684     normal
+```
+
+## Learn more
+
+- [Testing a generator
+  package](https://pedrobtz.github.io/zurngtest/articles/generator-packages.html):
+  testing a package’s generators from R and from C.
+- [The reference index](https://pedrobtz.github.io/zurngtest/reference/)
+  documents every function, and `?pract_test` lists PractRand’s
+  evaluations.
+
+## Related work
+
+PractRand is by Chris Doty-Humphrey and is in the public domain;
+zurngtest bundles version 0.96 with a few patches, described in the
+package’s `src/practrand/PROVENANCE`. On CRAN,
+[RDieHarder](https://cran.r-project.org/package=RDieHarder) runs the
+older DieHarder suite.
