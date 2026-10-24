@@ -25,7 +25,7 @@ open.
 
 ## Current state
 
-Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 3)
+Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 4)
 [`pract_test()`](https://pedrobtz.github.io/zurngtest/reference/pract_test.md)
 runs PractRand 0.96’s core and expanded batteries over
 [`pract_raw()`](https://pedrobtz.github.io/zurngtest/reference/pract_raw.md),
@@ -33,9 +33,10 @@ runs PractRand 0.96’s core and expanded batteries over
 [`pract_rng()`](https://pedrobtz.github.io/zurngtest/reference/pract_rng.md)
 and
 [`pract_interleave()`](https://pedrobtz.github.io/zurngtest/reference/pract_interleave.md)
-sources, and C code reaches it through `zurngtest_test_cfun()`.
-Known-result regressions and `RNG_test` equivalence (Stage 4) are next.
-The roadmap in `.agents/roadmap.md` takes it to v0.1.0.
+sources, and C code reaches it through `zurngtest_test_cfun()`. Its
+results equal `RNG_test`’s on the same bytes; documentation and a
+`zurand` vignette (Stage 5) are next. The roadmap in
+`.agents/roadmap.md` takes it to v0.1.0.
 
 ## Stage tracking
 
@@ -91,6 +92,17 @@ Rscript -e 'devtools::test(shuffle = TRUE)'      # order independence
 Rscript -e 'devtools::check()'                   # R CMD check
 air format .                                     # format R sources
 ```
+
+Occasional, and in the `equivalence` workflow:
+
+``` sh
+tools/equivalence/build-rng-test /tmp/pr      # RNG_test, unpatched, from the pin
+Rscript tools/equivalence/compare.R /tmp/pr/RNG_test   # needs zurngtest installed
+ZURNGTEST_LONG_TESTS=true Rscript -e 'devtools::test(filter = "known-results")'
+```
+
+Time throughput with an installed build: `devtools::load_all()` compiles
+at `-O0`.
 
 ## Architecture
 

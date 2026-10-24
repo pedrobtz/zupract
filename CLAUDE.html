@@ -43,7 +43,7 @@
 </div>
 <div class="section level2">
 <h2 id="current-state">Current state<a class="anchor" aria-label="anchor" href="#current-state"></a></h2>
-<p>Scaffolded 2026-10-23 with <code>create-pkg.sh</code>. As of 2026-10-24 (Stage 3) <code><a href="reference/pract_test.html">pract_test()</a></code> runs PractRand 0.96’s core and expanded batteries over <code><a href="reference/pract_raw.html">pract_raw()</a></code>, <code><a href="reference/pract_raw.html">pract_fun()</a></code>, <code><a href="reference/pract_rng.html">pract_rng()</a></code> and <code><a href="reference/pract_interleave.html">pract_interleave()</a></code> sources, and C code reaches it through <code>zurngtest_test_cfun()</code>. Known-result regressions and <code>RNG_test</code> equivalence (Stage 4) are next. The roadmap in <code>.agents/roadmap.md</code> takes it to v0.1.0.</p>
+<p>Scaffolded 2026-10-23 with <code>create-pkg.sh</code>. As of 2026-10-24 (Stage 4) <code><a href="reference/pract_test.html">pract_test()</a></code> runs PractRand 0.96’s core and expanded batteries over <code><a href="reference/pract_raw.html">pract_raw()</a></code>, <code><a href="reference/pract_raw.html">pract_fun()</a></code>, <code><a href="reference/pract_rng.html">pract_rng()</a></code> and <code><a href="reference/pract_interleave.html">pract_interleave()</a></code> sources, and C code reaches it through <code>zurngtest_test_cfun()</code>. Its results equal <code>RNG_test</code>’s on the same bytes; documentation and a <code>zurand</code> vignette (Stage 5) are next. The roadmap in <code>.agents/roadmap.md</code> takes it to v0.1.0.</p>
 </div>
 <div class="section level2">
 <h2 id="stage-tracking">Stage tracking<a class="anchor" aria-label="anchor" href="#stage-tracking"></a></h2>
@@ -77,6 +77,11 @@
 <span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::test(shuffle = TRUE)'</span>      <span class="co"># order independence</span></span>
 <span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::check()'</span>                   <span class="co"># R CMD check</span></span>
 <span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="ex">air</span> format .                                     <span class="co"># format R sources</span></span></code></pre></div>
+<p>Occasional, and in the <code>equivalence</code> workflow:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">tools/equivalence/build-rng-test</span> /tmp/pr      <span class="co"># RNG_test, unpatched, from the pin</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">Rscript</span> tools/equivalence/compare.R /tmp/pr/RNG_test   <span class="co"># needs zurngtest installed</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="va">ZURNGTEST_LONG_TESTS</span><span class="op">=</span>true <span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'devtools::test(filter = "known-results")'</span></span></code></pre></div>
+<p>Time throughput with an installed build: <code>devtools::load_all()</code> compiles at <code>-O0</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>
