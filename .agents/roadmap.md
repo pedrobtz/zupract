@@ -18,7 +18,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 | 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | [#14](https://github.com/pedrobtz/zurngtest/pull/14) | 2026-10-24 |
 | 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | [#39](https://github.com/pedrobtz/zurngtest/pull/39) | 2026-10-24 |
 | 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | [#40](https://github.com/pedrobtz/zurngtest/pull/40) | 2026-10-24 |
-| 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | | 2026-10-24 |
+| 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | [#41](https://github.com/pedrobtz/zurngtest/pull/41) | 2026-10-24 |
 | 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zurngtest/issues/7) | | |
 | 6 | [Full CI](#stage-6--full-ci) | full | [#8](https://github.com/pedrobtz/zurngtest/issues/8) | | |
 | 7 | [v0.1.0 readiness](#stage-7--v010-readiness) | full | [#9](https://github.com/pedrobtz/zurngtest/issues/9) | | |
