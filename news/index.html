@@ -38,6 +38,10 @@
 <code><a href="../reference/zurngtest_info.html">zurngtest_info()</a></code> reports the package version and the test batteries.</li>
 <li>Every condition the package signals inherits <code>zurngtest_error</code>.</li>
 <li>Bundles PractRand 0.96, compiled without output to the console and without calls that end R; <code><a href="../reference/zurngtest_info.html">zurngtest_info()</a></code> reports its version.</li>
+<li>
+<code><a href="../reference/pract_test.html">pract_test()</a></code> runs PractRand’s core or expanded battery on a source at doubling lengths and returns a <code>zurngtest_result</code>: one row per test result per length, with PractRand’s evaluation, the first failing length and a <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> method in the style of <code>RNG_test</code>.</li>
+<li>
+<code><a href="../reference/pract_raw.html">pract_raw()</a></code> and <code><a href="../reference/pract_raw.html">pract_fun()</a></code> make sources from raw bytes, connections and R functions.</li>
 </ul></div>
   </main></div>
 

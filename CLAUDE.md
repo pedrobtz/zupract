@@ -25,12 +25,15 @@ open.
 
 ## Current state
 
-Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 1)
-the package vendors and compiles PractRand 0.96 and reports its version
-through
-[`zurngtest_info()`](https://pedrobtz.github.io/zurngtest/reference/zurngtest_info.md);
-nothing tests a generator yet. The roadmap in `.agents/roadmap.md` takes
-it to v0.1.0.
+Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 2)
+[`pract_test()`](https://pedrobtz.github.io/zurngtest/reference/pract_test.md)
+runs PractRand 0.96’s core and expanded batteries over
+[`pract_raw()`](https://pedrobtz.github.io/zurngtest/reference/pract_raw.md)
+and
+[`pract_fun()`](https://pedrobtz.github.io/zurngtest/reference/pract_raw.md)
+sources. R’s own generators, interleaving and the C callable for
+generator packages (Stage 3) are not built yet. The roadmap in
+`.agents/roadmap.md` takes it to v0.1.0.
 
 ## Stage tracking
 
@@ -106,23 +109,43 @@ To be completed as stages land; see `.agents/design.md`.
   returning to R. No handler can catch a throw from a destructor or from
   static initialisation, so `issue_error()` must never be reachable
   there (patch 0005; see `src/practrand/PROVENANCE`).
+- `src/driver.cpp` is the test driver, a port of PractRand’s
+  `tools/TestManager.h`: the tests, the known-good hc256 they use, and
+  the block buffer with its repeated prefix, behind an external pointer
+  whose finalizer deletes them. `R/pract-test.R` drives it: it reads the
+  source in chunks, feeds whole 1 KiB blocks and collects results at
+  each length, so interrupts and source errors are plain R.
 
 ## Invariants that are easy to break
 
-The design fixes these before any code exists:
+- **No C++ object with a destructor is alive in a frame that calls an R
+  API function that can longjmp.** The `.Call` entries in
+  `src/driver.cpp` do their C++ work in `try` blocks on state the
+  external pointer owns, copy an exception’s message into a `char`
+  buffer, and only then call R. A longjmp past a live `std::vector`
+  leaks it and skips its destructor.
+
+- **Test helpers belong in `tests/testthat/helper-*.R`.** A helper
+  defined at the top of a test file breaks
+  `devtools::test(shuffle = TRUE)`; this happened twice. The design
+  fixes these before any code exists:
 
 - **Only `R_init_zurngtest` is exported** from the shared library, with
   hidden visibility from Stage 0. `zurngtest_test_cfun` is registered
   with `R_RegisterCCallable()`, not exported. Generator packages reach
   it only through `R_GetCCallable()`.
+
 - **R sources run on the main thread only.** An R function source is
   called between battery calls to fill a buffer, never from a worker.
   Only the C callable source may be filled off the main thread.
+
 - **PractRand’s labels and thresholds are reported unchanged.** The
   number users compare across papers is PractRand’s; zurngtest adds no
   evaluation of its own.
+
 - **Testing R’s generator does not change the user’s stream.** The R RNG
   state is saved and restored around a run.
+
 - **Every condition inherits `zurngtest_error`.**
 
 Add each further one when a stage establishes it.
