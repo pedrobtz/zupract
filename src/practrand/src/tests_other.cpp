@@ -5415,8 +5415,10 @@ PractRand::Tests::NearSeq3::NearSeq3() {
 	*/
 }
 PractRand::Tests::NearSeq3::~NearSeq3() {
-	if (NUM_SIZES < 4) issue_error();//optimization assumes there's at least that many
-	if (THRESHOLD_TIGHTENING_FRACTION >= 9000) issue_error();//is parts per ten-thousand
+	// Modified for the zurngtest R package: a throw from a destructor would
+	// terminate the process; these are compile-time constants.
+	static_assert(NUM_SIZES >= 4, "optimization assumes there's at least that many");
+	static_assert(THRESHOLD_TIGHTENING_FRACTION < 9000, "is parts per ten-thousand");
 }
 void PractRand::Tests::NearSeq3::init(PractRand::RNGs::vRNG *known_good) {
 	TestBaseclass::init(known_good);
