@@ -25,3 +25,8 @@ Useful links:
 Authors:
 
 - Pedro Baltazar <pedrobtz@gmail.com> \[copyright holder\]
+
+Other contributors:
+
+- Chris Doty-Humphrey (PractRand library, src/practrand/) \[contributor,
+  copyright holder\]

@@ -12,8 +12,8 @@ zurngtest_info()
 ## Value
 
 A list with elements `version` (the package version), `practrand` (the
-vendored 'PractRand' version, `NA` until it is vendored) and `batteries`
-(the names of the test batteries).
+version of the vendored 'PractRand' library) and `batteries` (the names
+of the test batteries).
 
 ## Examples
 
@@ -23,7 +23,7 @@ zurngtest_info()
 #> [1] "0.0.0.9000"
 #> 
 #> $practrand
-#> [1] NA
+#> [1] "0.96"
 #> 
 #> $batteries
 #> [1] "core"     "expanded"

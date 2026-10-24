@@ -4,6 +4,9 @@
 
 - **Pedro Baltazar**. Author, maintainer, copyright holder.
 
+- **Chris Doty-Humphrey**. Contributor, copyright holder.  
+  PractRand library, src/practrand/
+
 ## Citation
 
 Source:

@@ -43,7 +43,7 @@
 </div>
 <div class="section level2">
 <h2 id="current-state">Current state<a class="anchor" aria-label="anchor" href="#current-state"></a></h2>
-<p>Scaffolded 2026-10-23 with <code>create-pkg.sh</code>; no functionality yet. The roadmap in <code>.agents/roadmap.md</code> takes it to v0.1.0.</p>
+<p>Scaffolded 2026-10-23 with <code>create-pkg.sh</code>. As of 2026-10-24 (Stage 1) the package vendors and compiles PractRand 0.96 and reports its version through <code><a href="reference/zurngtest_info.html">zurngtest_info()</a></code>; nothing tests a generator yet. The roadmap in <code>.agents/roadmap.md</code> takes it to v0.1.0.</p>
 </div>
 <div class="section level2">
 <h2 id="stage-tracking">Stage tracking<a class="anchor" aria-label="anchor" href="#stage-tracking"></a></h2>
@@ -80,8 +80,13 @@
 </div>
 <div class="section level2">
 <h2 id="architecture">Architecture<a class="anchor" aria-label="anchor" href="#architecture"></a></h2>
-<p>To be written as stages land; see <code>.agents/design.md</code>. The scaffold set up a C stub (<code>src/zurngtest.c</code>, via <code>usethis::use_c()</code>) with <code>@useDynLib</code> registration; the design moves the native layer to C++ for the vendored PractRand and zurngtest’s own driver.</p>
-</div>
+<p>To be completed as stages land; see <code>.agents/design.md</code>.</p>
+<ul><li>
+<code>src/practrand/</code> is the vendored PractRand library (see Vendored native code). <code>src/Makevars</code> lists its 21 objects, adds <code>-Ipractrand/include</code> and builds everything with hidden visibility.</li>
+<li>
+<code>src/init.cpp</code> is the R boundary: <code>R_init_zurngtest</code> (the one visible symbol) registers the <code>.Call</code> entry points, disables dynamic symbol lookup and forces symbols, so R code calls them through the objects <code>@useDynLib zurngtest, .registration = TRUE</code> creates, as in <code>.Call(zrt_practrand_version)</code>.</li>
+<li>PractRand’s <code>issue_error()</code> throws <code>std::runtime_error</code> (patch 0001). Every entry point that calls into PractRand must catch it before returning to R.</li>
+</ul></div>
 <div class="section level2">
 <h2 id="invariants-that-are-easy-to-break">Invariants that are easy to break<a class="anchor" aria-label="anchor" href="#invariants-that-are-easy-to-break"></a></h2>
 <p>The design fixes these before any code exists:</p>
@@ -167,14 +172,16 @@
 </div>
 <div class="section level2">
 <h2 id="vendored-native-code">Vendored native code<a class="anchor" aria-label="anchor" href="#vendored-native-code"></a></h2>
-<p>PractRand (C++), by Chris Doty-Humphrey; reported as public domain. Stage 0 confirms the licence, chooses between the sourceforge 0.94 release and a maintained fork, and records the pin in <code>src/practrand/VERSION</code>. Fill in the tag, commit and checksums when it is vendored.</p>
-<ul><li>Pin a stable upstream release, never <code>master</code> or a release candidate.</li>
-<li>Record the tag, the commit and the checksums, and write down the update procedure so the next bump is mechanical.</li>
-<li>Keep upstream <code>LICENSE</code> and <code>NOTICE</code> under <code>src/vendor/&lt;lib&gt;/</code>, declare the vendored code in <code>DESCRIPTION</code> and <code>inst/COPYRIGHTS</code>.</li>
-<li>Keep the vendor tree clearly separated from first-party source, and record every local patch and why it exists.</li>
-<li>
-<strong>CRAN’s compiled-code check applies to vendored code too.</strong> No <code>stdout</code> or <code>stderr</code>, no <code>printf</code>, <code>abort</code>, <code>exit</code> or system RNG may be linked, even behind a debug switch that never runs. Remove them with a patch in <code>tools/patches/</code>, list it in <code>src/vendor/PROVENANCE</code>, and make the vendor-verify script check “upstream plus exactly these patches”. Avoid diagnostic-suppressing pragmas too, because they draw their own NOTE. zuhtml is the reference: <code>tools/patches/0002-no-stdio.patch</code> and <code>tools/verify-vendor</code>. zuxml’s first upload was archived because it justified such a symbol instead of patching it.</li>
-<li>Guard against regressions in CI: run <code>nm -u</code> on the built objects and fail on any of those symbols, so an upstream bump cannot bring them back.</li>
+<p>PractRand 0.96 (C++), by Chris Doty-Humphrey, public domain with a CC0 fallback, from the SourceForge release archive (SHA-256 <code>e4caf7fd…</code>; no tag or commit exists upstream). <code>src/practrand/PROVENANCE</code> holds the pin, the patch list and the reasons for both; <code>inst/COPYRIGHTS</code> and <code>DESCRIPTION</code> credit the author.</p>
+<ul><li><p><code>tools/vendor/derive</code> rebuilds the tree from the archive and <code>tools/patches/</code>; <code>tools/vendor/update</code> writes it into <code>src/practrand/</code>; <code>tools/vendor/verify</code> (with <code>--canary</code>) is the gate <code>vendor.yaml</code> runs. Never edit <code>src/practrand/</code> by hand: change a patch and run <code>update</code>.</p></li>
+<li><p><code>0001-no-stdio.patch</code> is generated by <code>tools/vendor/make-no-stdio-patch</code>; <code>0002-cran-warnings.patch</code> is hand-made. Both are described in PROVENANCE.</p></li>
+<li><p>Measure warnings the way R CMD check does: build the tarball and run <code>R CMD check --as-cran</code> with <code>-Wall -pedantic</code> in <code>R_MAKEVARS_USER</code>. <code>devtools::check()</code> overrides <code>R_MAKEVARS_USER</code>, so its install log understates them. Judge them by R-devel’s list of significant warnings (<code>src/library/tools/R/check.R</code>), not the installed R’s, and compile as C++20 and for arm64 as well: R-devel adds C++20 deprecations, R builds C++20 by default, and CRAN’s macOS builds are arm64.</p></li>
+<li><p>Pin a stable upstream release, never <code>master</code> or a release candidate.</p></li>
+<li><p>Record the tag, the commit and the checksums, and write down the update procedure so the next bump is mechanical.</p></li>
+<li><p>Keep upstream <code>LICENSE</code> and <code>NOTICE</code> under <code>src/vendor/&lt;lib&gt;/</code>, declare the vendored code in <code>DESCRIPTION</code> and <code>inst/COPYRIGHTS</code>.</p></li>
+<li><p>Keep the vendor tree clearly separated from first-party source, and record every local patch and why it exists.</p></li>
+<li><p><strong>CRAN’s compiled-code check applies to vendored code too.</strong> No <code>stdout</code> or <code>stderr</code>, no <code>printf</code>, <code>abort</code>, <code>exit</code> or system RNG may be linked, even behind a debug switch that never runs. Remove them with a patch in <code>tools/patches/</code>, list it in <code>src/vendor/PROVENANCE</code>, and make the vendor-verify script check “upstream plus exactly these patches”. Avoid diagnostic-suppressing pragmas too, because they draw their own NOTE. zuhtml is the reference: <code>tools/patches/0002-no-stdio.patch</code> and <code>tools/verify-vendor</code>. zuxml’s first upload was archived because it justified such a symbol instead of patching it.</p></li>
+<li><p>Guard against regressions in CI: run <code>nm -u</code> on the built objects and fail on any of those symbols, so an upstream bump cannot bring them back.</p></li>
 </ul></div>
 <div class="section level2">
 <h2 id="commits-and-pull-requests">Commits and pull requests<a class="anchor" aria-label="anchor" href="#commits-and-pull-requests"></a></h2>
