@@ -1,0 +1,37 @@
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+name: equivalence
+
+permissions: read-all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# pract_test() must give the results PractRand's own RNG_test gives for the
+# same bytes: RNG_test is built from the pinned archive, unpatched, and
+# tools/equivalence/compare.R compares the two at 64 KiB to 1 MiB.
+jobs:
+  equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: local::.
+          needs: check
+      - name: Build RNG_test
+        run: tools/equivalence/build-rng-test "$RUNNER_TEMP/practrand"
+      - name: Compare pract_test() with RNG_test
+        run: Rscript tools/equivalence/compare.R "$RUNNER_TEMP/practrand/RNG_test"
+      - name: Known results, long runs included
+        env:
+          ZURNGTEST_LONG_TESTS: "true"
+        run: Rscript -e 'testthat::test_local(filter = "known-results", stop_on_failure = TRUE)'
