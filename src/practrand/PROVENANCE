@@ -12,6 +12,7 @@ Vendored dependency: PractRand, by Chris Doty-Humphrey
                  0001-no-stdio.patch
                  0002-cran-warnings.patch
                  0003-portability.patch
+                 0004-calibration-leak.patch
 
 src/practrand/ is tools/vendor/derive's output: upstream's include/ and src/
 trees without RNGs/other/, and doc/license.txt as LICENSE, with line endings
@@ -94,3 +95,11 @@ Measured 2026-10-24 against R-devel's src/library/tools/R/check.R, with
 GCC 15 (C++17 and C++20) and Apple clang 17 (C++17; C++20 for x86_64 and
 arm64): no significant warnings. Regenerate 0003 against the tree with 0001
 and 0002 applied.
+
+0004-calibration-leak.patch fixes an upstream leak found by valgrind in CI
+(2026-10-24): the static calibration_manager in tests_core.cpp is built
+when the library loads, and its calibration tables list 28 (test, length)
+entries twice. Each duplicate overwrote the pointer to the first copy and
+leaked it (2,240 bytes directly, 32,928 with what it owns). The
+constructor now frees the earlier entry before storing the later one, so
+the later entry still wins, as before.

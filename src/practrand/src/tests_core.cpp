@@ -407,10 +407,18 @@ double PractRand::Tests::TestCalibrationData::pvalue_to_sample(double pvalue) co
 
 PractRand::Tests::TestCalibrationManager::TestCalibrationManager(const PractRand::Tests::RawTestCalibrationData_117 *raw_data_array117, const PractRand::Tests::RawTestCalibrationData_129 *raw_data_array129) {
 	for (int i = 0; raw_data_array117[i].name; i++) {
-		data[raw_data_array117[i].name][raw_data_array117[i].blocks] = new TestCalibrationData(&raw_data_array117[i]);
+		// Modified for the zurngtest R package: the tables list some entries
+		// twice, and overwriting the pointer leaked the first copy.
+		TestCalibrationData *&slot = data[raw_data_array117[i].name][raw_data_array117[i].blocks];
+		delete slot;
+		slot = new TestCalibrationData(&raw_data_array117[i]);
 	}
 	for (int i = 0; raw_data_array129[i].name; i++) {
-		data[raw_data_array129[i].name][raw_data_array129[i].blocks] = new TestCalibrationData(&raw_data_array129[i]);
+		// Modified for the zurngtest R package: the tables list some entries
+		// twice, and overwriting the pointer leaked the first copy.
+		TestCalibrationData *&slot = data[raw_data_array129[i].name][raw_data_array129[i].blocks];
+		delete slot;
+		slot = new TestCalibrationData(&raw_data_array129[i]);
 	}
 }
 PractRand::Tests::TestCalibrationManager::~TestCalibrationManager() {
