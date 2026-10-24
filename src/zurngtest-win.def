@@ -1,0 +1,3 @@
+LIBRARY zurngtest.dll
+EXPORTS
+ R_init_zurngtest

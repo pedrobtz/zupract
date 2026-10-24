@@ -87,6 +87,8 @@ To be completed as stages land; see `.agents/design.md`.
 - `src/practrand/` is the vendored PractRand library (see Vendored native
   code). `src/Makevars` lists its 21 objects, adds
   `-Ipractrand/include` and builds everything with hidden visibility.
+  Windows has no visibility flag; `src/zurngtest-win.def` limits the DLL's
+  exports to `R_init_zurngtest`.
 - `src/init.cpp` is the R boundary: `R_init_zurngtest` (the one visible
   symbol) registers the `.Call` entry points, disables dynamic symbol
   lookup and forces symbols, so R code calls them through the objects
@@ -132,7 +134,10 @@ Add each further one when a stage establishes it.
   Use it as an oracle rather than inventing cases by hand. Here the oracle is
   PractRand's own `RNG_test` tool, built from the same sources in CI, plus
   generators with published failure lengths; neither is wired up yet.
-- **Helpers live in `tests/testthat/helper-*.R`.** None yet.
+- **Helpers live in `tests/testthat/helper-*.R`.** `helper-symbols.R` reads
+  the library's exports (nm, or `objdump -p` on Windows) and undefined
+  symbols, fails when the tool is missing or fails (outside CRAN), and
+  builds the banned list from R's own `tools:::so_symbol_names_table`.
 - **Keep the suite inside the CRAN time budget.** The design budgets under
   15 s, with short lengths only; long runs are CI-only.
 
@@ -171,7 +176,8 @@ entry.
 - Edit `README.Rmd`, not the generated `README.md`.
 - Keep prose simple and short. One idea per sentence.
 - Wrap roxygen text at 80 characters and run `air format .` on R sources.
-- Use `lower_snake_case`, and prefix internal native symbols with `<pkg>_`.
+- Use `lower_snake_case`, and prefix internal native symbols with `zrt_`
+  (design §3).
 - Keep hard runtime dependencies at zero unless a recorded design decision
   says otherwise.
 - Export and document public functions. Do not create roxygen topics for
