@@ -18,7 +18,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 | 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | [#14](https://github.com/pedrobtz/zurngtest/pull/14) | 2026-10-24 |
 | 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | [#39](https://github.com/pedrobtz/zurngtest/pull/39) | 2026-10-24 |
 | 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | [#40](https://github.com/pedrobtz/zurngtest/pull/40) | 2026-10-24 |
-| 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | | |
+| 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | [#41](https://github.com/pedrobtz/zurngtest/pull/41) | 2026-10-24 |
 | 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zurngtest/issues/7) | | |
 | 6 | [Full CI](#stage-6--full-ci) | full | [#8](https://github.com/pedrobtz/zurngtest/issues/8) | | |
 | 7 | [v0.1.0 readiness](#stage-7--v010-readiness) | full | [#9](https://github.com/pedrobtz/zurngtest/issues/9) | | |
@@ -299,6 +299,39 @@ generators with published results fail, or pass, where they should.
 - Every known-result generator fails, or passes, at its recorded length in
   CI.
 - The CRAN suite runs in under 15 s on the quick profile's Ubuntu leg.
+
+**Measured** (2026-10-24, macOS x86_64, single thread, an installed -O2
+build; `devtools::load_all()` builds at -O0 and is about three times slower).
+
+- **Equivalence.** `tools/equivalence/compare.R` runs `RNG_test -a`, built
+  unpatched from the pinned archive, and `pract_test()` on the same bytes: a
+  repeating pattern, R's Mersenne-Twister as bytes, and 32-bit counter words,
+  at 64 KiB to 1 MiB. Every test name, evaluation and p-value (to the digits
+  `RNG_test` prints, which it sometimes truncates) agrees at every length,
+  so the six patches change none of these results.
+- **Known results**, each length the one `RNG_test` reports for the same
+  stream: a full-output 32-bit LCG (Numerical Recipes) fails at 4 KiB;
+  xorshift32 (13, 17, 5) fails at 16 KiB. hc256 passes to 256 MiB,
+  `std::mt19937` to 1 GiB and R's Mersenne-Twister (through `pract_rng()`)
+  to 64 MiB; those three are long runs, made in the equivalence workflow
+  (`ZURNGTEST_LONG_TESTS=true`).
+- **Throughput**, 256 MiB with the core battery and standard folding:
+  `RNG_test` hc256 4.44 s, mt19937 4.43 s; through the C callable, hc256
+  4.49 s (99%) and mt19937 4.85 s (91%), against the 90% target;
+  `pract_rng()` Mersenne-Twister 7.86 s (56%), against the 50% target.
+- The CRAN-run suite takes about 5 s.
+
+**Deviations** (2026-10-24).
+
+- Mersenne-Twister's known failure, PractRand's binary-rank tests at
+  256 GiB, is not run: it takes hours. The long runs check that it, and
+  hc256, pass at the lengths they should.
+- The C-callable generators for these tests (`src/test-generators.cpp`)
+  are compiled into the package and reached through `.Call()`, as the
+  callable's own test is.
+- To agree with `RNG_test`, p-values below 0.01 and above 0.99 are now
+  computed from each result's suspicion, as `RNG_test` prints them; the
+  stored p-value loses precision near 1.
 
 **Design.** §10, §12; acceptance criteria 2 and 3.
 

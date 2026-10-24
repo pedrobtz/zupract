@@ -39,7 +39,8 @@ test_that("the .Call entry points are registered and found only as symbols", {
       "zrt_driver_results",
       "zrt_issue_error_for_tests",
       "zrt_practrand_version",
-      "zrt_test_cfun_counter"
+      "zrt_test_cfun_counter",
+      "zrt_test_generator"
     )
   )
   # R_useDynamicSymbols(FALSE) and R_forceSymbols(TRUE): no lookup by name.

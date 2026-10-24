@@ -150,7 +150,15 @@ void Driver::collect() {
   for (std::size_t i = 0; i < results.size(); i++) {
     names.push_back(results[i].name);
     if (valid[i]) {
-      p_values.push_back(results[i].get_pvalue());
+      // Near 0 or 1 the p-value PractRand stores loses precision that its
+      // suspicion keeps; RNG_test prints those p-values from the suspicion,
+      // and so does this.
+      double p = results[i].get_pvalue();
+      if (results[i].type != TestResult::TYPE_PASSFAIL && (p < 0.01 || p > 0.99)) {
+        double q = TestResult::suspicion_to_pvalue(results[i].get_suspicion());
+        if (q >= 0 && q <= 1) p = q;
+      }
+      p_values.push_back(p);
       evaluations.push_back(
           evaluate(results[i], results[i].get_weight() / total_weight));
     } else {

@@ -18,6 +18,7 @@ SEXP zrt_issue_error_for_tests(void);
 SEXP zrt_test_cfun(zurngtest_fill_fn fill, void *state, SEXP options);
 SEXP zrt_cfun_fill(SEXP ptr, SEXP nbytes);
 SEXP zrt_test_cfun_counter(SEXP start, SEXP options);
+SEXP zrt_test_generator(SEXP name, SEXP seed, SEXP options);
 
 // The PractRand version compiled in, for zurngtest_info().
 SEXP zrt_practrand_version(void) {
@@ -31,6 +32,7 @@ static const R_CallMethodDef call_methods[] = {
     {"zrt_issue_error_for_tests", (DL_FUNC)&zrt_issue_error_for_tests, 0},
     {"zrt_cfun_fill", (DL_FUNC)&zrt_cfun_fill, 2},
     {"zrt_test_cfun_counter", (DL_FUNC)&zrt_test_cfun_counter, 2},
+    {"zrt_test_generator", (DL_FUNC)&zrt_test_generator, 3},
     {"zrt_practrand_version", (DL_FUNC)&zrt_practrand_version, 0},
     {NULL, NULL, 0}};
 

@@ -1,0 +1,32 @@
+#!/bin/sh
+# Build PractRand's own RNG_test from the archive pinned in
+# src/practrand/PROVENANCE, unpatched, into the directory given. Run from the
+# package root. tools/equivalence/compare.R tests pract_test() against it.
+set -eu
+
+OUT=${1:?usage: tools/equivalence/build-rng-test <out-dir>}
+PROV="src/practrand/PROVENANCE"
+URL=$(awk '/^  Archive:/ {print $2}' "$PROV")
+EXPECTED=$(awk '/^  SHA-256:/ {print $2}' "$PROV")
+CXX=${CXX:-c++}
+
+mkdir -p "$OUT"
+WORK=$(mktemp -d)
+trap 'rm -rf "$WORK"' EXIT
+
+curl -fsSL --retry 3 --retry-delay 2 --retry-connrefused \
+  -o "$WORK/practrand.zip" "$URL"
+ACTUAL=$(shasum -a 256 "$WORK/practrand.zip" | cut -d' ' -f1)
+if [ "$ACTUAL" != "$EXPECTED" ]; then
+  echo "FAIL: archive sha256 mismatch ($ACTUAL)" >&2
+  exit 1
+fi
+unzip -q "$WORK/practrand.zip" -d "$WORK/x"
+SRC="$WORK/x/PractRand"
+find "$SRC" -type f -exec perl -pi -e 's/\r$//' {} +
+
+# The whole library, RNGs/other/ included, as RNG_test needs it.
+$CXX -std=gnu++17 -O2 -w -pthread -I"$SRC/include" -o "$OUT/RNG_test" \
+  "$SRC/tools/RNG_test.cpp" "$SRC"/src/*.cpp "$SRC"/src/RNGs/*.cpp \
+  "$SRC"/src/RNGs/other/*.cpp
+echo "==> built $OUT/RNG_test"
