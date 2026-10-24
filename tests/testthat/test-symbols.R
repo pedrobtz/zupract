@@ -30,7 +30,16 @@ test_that("compiled code links nothing that writes to the console or ends R", {
 
 test_that("the .Call entry points are registered and found only as symbols", {
   routines <- getDLLRegisteredRoutines("zurngtest")[[".Call"]]
-  expect_named(routines, "zrt_practrand_version")
+  expect_setequal(
+    names(routines),
+    c(
+      "zrt_driver_feed",
+      "zrt_driver_new",
+      "zrt_driver_results",
+      "zrt_issue_error_for_tests",
+      "zrt_practrand_version"
+    )
+  )
   # R_useDynamicSymbols(FALSE) and R_forceSymbols(TRUE): no lookup by name.
   expect_error(.Call("zrt_practrand_version", PACKAGE = "zurngtest"))
 })

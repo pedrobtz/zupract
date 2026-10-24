@@ -36,5 +36,6 @@ PRACTRAND_OBJECTS = \
 	practrand/src/xbg_helpers.o
 
 OBJECTS = \
+	driver.o \
 	init.o \
 	$(PRACTRAND_OBJECTS)
