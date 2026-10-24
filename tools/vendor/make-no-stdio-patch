@@ -31,6 +31,15 @@ perl -pi -e 's|^#include <cstdlib>$|#include <cstdlib>\n#include <stdexcept>|' s
 perl -pi -e 's/\bstd::exit\(0\);/PractRand::issue_error();/g' \
   src/tests_core.cpp src/tests_other.cpp
 
+# The edits are regexes over upstream source; if one stops matching, the
+# patch would silently leave output or exit() behind. Check the result.
+if grep -rnE 'std::(printf|exit)\(|std::fprintf\(stderr' src include; then
+  echo "edits left std::printf, std::fprintf(stderr or std::exit behind" >&2
+  exit 1
+fi
+grep -q 'throw std::runtime_error' src/rand.cpp ||
+  { echo "issue_error() was not changed to throw" >&2; exit 1; }
+
 cd "$WORK"
 if diff -ruN a b > patch; then
   echo "no changes: the edits no longer match upstream" >&2

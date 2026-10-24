@@ -1,0 +1,5 @@
+#!/bin/sh
+# The vendored-source check vendor.yaml runs: the gate, then its canary.
+set -eu
+tools/vendor/verify
+tools/vendor/verify --canary
