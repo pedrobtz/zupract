@@ -109,7 +109,16 @@ compiles 22 translation units in about 27 s on a macOS machine.
   has no stated licence, and the library neither includes nor links it.
 - There is no `vendor-upstream.yml`: it watches GitHub releases, and
   PractRand is released on SourceForge. `vendor.yml` runs the verifier.
-- A second patch was needed, for compiler warnings (above).
+- Two more patches were needed: 0002 for compiler warnings (above), and
+  0003 for arm64 macOS and the C++20 deprecations R-devel counts as
+  significant, which the first CI run found.
+- The export criterion excludes libstdc++'s `std::` template
+  instantiations. libstdc++ gives namespace `std` default visibility, so
+  instantiations the library uses (`std::vector<double>`, `std::string`)
+  stay exported on Linux under `-fvisibility=hidden`. They are not the
+  package's symbols; `test-symbols.R` requires every other export to be
+  `R_init_zurngtest`. Hiding them too would need a linker version script,
+  which `Makevars` cannot pass portably.
 
 **Exit criteria.**
 

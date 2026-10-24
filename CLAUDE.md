@@ -239,7 +239,10 @@ the patch list and the reasons for both; `inst/COPYRIGHTS` and
 - Measure warnings the way R CMD check does: build the tarball and run
   `R CMD check --as-cran` with `-Wall -pedantic` in `R_MAKEVARS_USER`.
   `devtools::check()` overrides `R_MAKEVARS_USER`, so its install log
-  understates them.
+  understates them. Judge them by R-devel's list of significant warnings
+  (`src/library/tools/R/check.R`), not the installed R's, and compile
+  as C++20 and for arm64 as well: R-devel adds C++20 deprecations, R
+  builds C++20 by default, and CRAN's macOS builds are arm64.
 
 - Pin a stable upstream release, never `master` or a release candidate.
 - Record the tag, the commit and the checksums, and write down the update
