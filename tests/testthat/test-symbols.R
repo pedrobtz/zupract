@@ -1,9 +1,13 @@
 # The shared library's symbol table, read with nm. CRAN machines may have no
 # nm, and a Windows DLL's exports are not in its symbol table, so these run
-# on the CI legs that have it.
+# on the CI legs that have it. covr builds with --coverage, which links
+# libgcov into the library: its symbols are exported, and it writes to stderr
+# and calls exit() and abort(). The package's own symbols are checked on
+# every other leg.
 nm_symbols <- function(args) {
   skip_on_cran()
   skip_on_os("windows")
+  skip_if(identical(Sys.getenv("R_COVR"), "true"), "covr links libgcov")
   nm <- Sys.which("nm")
   skip_if(nm == "", "nm is not available")
   so <- getLoadedDLLs()[["zurngtest"]][["path"]]
@@ -43,10 +47,6 @@ test_that("the shared library exports only R_init_zurngtest", {
 })
 
 test_that("compiled code links nothing that writes to the console or ends R", {
-  # covr builds with --coverage, which links libgcov, and libgcov writes to
-  # stderr and calls exit() and abort(). The package's own code is checked on
-  # every other leg.
-  skip_if(identical(Sys.getenv("R_COVR"), "true"), "covr links libgcov")
   banned <- c(
     "printf",
     "vprintf",
