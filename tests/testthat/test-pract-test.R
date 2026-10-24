@@ -170,4 +170,7 @@ test_that("print() shows the source, the lengths and the anomalies", {
   expect_match(out[[1]], "raw vector of 65536 bytes", fixed = TRUE)
   expect_true(any(grepl("length= 64 kilobytes", out, fixed = TRUE)))
   expect_true(any(grepl("FAIL", out, fixed = TRUE)))
+  # Every result line starts with exactly two spaces.
+  rows <- grep("FAIL", out, value = TRUE)
+  expect_true(all(grepl("^  [^ ]", rows)))
 })
