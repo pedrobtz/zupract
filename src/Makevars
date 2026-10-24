@@ -39,4 +39,5 @@ PRACTRAND_OBJECTS = \
 OBJECTS = \
 	driver.o \
 	init.o \
+	test-generators.o \
 	$(PRACTRAND_OBJECTS)
