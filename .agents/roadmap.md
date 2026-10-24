@@ -153,6 +153,8 @@ doubling lengths over raw bytes and R-function sources, and returns a
   integer or raw), filled on the main thread only.
 - `pract_test()` with `battery`, `min_bytes`, `max_bytes`,
   `stop_on_failure`, `folding` and `seed`.
+- One internal list of battery names, used by both `pract_test()`'s
+  `match.arg()` and `zurngtest_info()`.
 - `zurngtest_result`: the data frame, `failed_at`, `source`, `elapsed`, and a
   `print()` method reproducing `RNG_test`'s compact report.
 - PractRand's labels and thresholds reported unchanged.
