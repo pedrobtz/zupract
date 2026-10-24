@@ -250,12 +250,13 @@ throughput for the same generator; through `pract_rng()` at least 50%.
 | D5 | Verdicts | PractRand's labels and thresholds unchanged |
 | D6 | Info function | `zurngtest_info()`, the package name (R1) |
 | D7 | Name | `zurngtest`, chosen 2026-10-23 over `zupract` and `zupractrand`; the R prefix stays `pract_`, internal C prefix `zrt_` |
+| D8 | Upstream | PractRand 0.96 from SourceForge (2025-12-26), newer than every GitHub fork; decided 2026-10-24 in Stage 1, recorded in `src/practrand/PROVENANCE` |
 
 ## 14. Open questions
 
 1. **The name.** Decided 2026-10-23: `zurngtest` (D7).
-2. **Which upstream.** The sourceforge 0.94 release or a maintained fork?
-   Stage 0 compares them.
+2. **Which upstream.** Decided 2026-10-24: PractRand 0.96 from SourceForge
+   (D8). The RFC knew only 0.94.
 3. **TestU01** in the same package or a sibling? Recommended: sibling, if
    ever; one battery per package keeps the licences and builds simple.
 
