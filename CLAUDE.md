@@ -21,11 +21,12 @@ questions (the name, which PractRand upstream, TestU01) are still open.
 
 ## Current state
 
-Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 2)
+Scaffolded 2026-10-23 with `create-pkg.sh`. As of 2026-10-24 (Stage 3)
 `pract_test()` runs PractRand 0.96's core and expanded batteries over
-`pract_raw()` and `pract_fun()` sources. R's own generators, interleaving and
-the C callable for generator packages (Stage 3) are not built yet. The
-roadmap in `.agents/roadmap.md` takes it to v0.1.0.
+`pract_raw()`, `pract_fun()`, `pract_rng()` and `pract_interleave()` sources,
+and C code reaches it through `zurngtest_test_cfun()`. Known-result
+regressions and `RNG_test` equivalence (Stage 4) are next. The roadmap in
+`.agents/roadmap.md` takes it to v0.1.0.
 
 ## Stage tracking
 
@@ -106,6 +107,11 @@ To be completed as stages land; see `.agents/design.md`.
   finalizer deletes them. `R/pract-test.R` drives it: it reads the source
   in chunks, feeds whole 1 KiB blocks and collects results at each length,
   so interrupts and source errors are plain R.
+- `src/callable.cpp` is the C API: `zurngtest_test_cfun()`, registered with
+  `R_RegisterCCallable()` and declared in `inst/include/zurngtest.h`, runs
+  `pract_test()` on a source whose chunks the caller's fill function writes
+  natively. `R/rng.R`'s readers keep their own `.Random.seed` and swap it in
+  only while they draw.
 
 ## Invariants that are easy to break
 

@@ -17,7 +17,7 @@ and its last stage is split into documentation, `Full CI` and readiness.
 | 0 | [Package identity](#stage-0--package-identity) | quick | [#2](https://github.com/pedrobtz/zurngtest/issues/2) | [#12](https://github.com/pedrobtz/zurngtest/pull/12) | 2026-10-23 |
 | 1 | [Vendor PractRand](#stage-1--vendor-practrand) | full | [#3](https://github.com/pedrobtz/zurngtest/issues/3) | [#14](https://github.com/pedrobtz/zurngtest/pull/14) | 2026-10-24 |
 | 2 | [Driver and core battery](#stage-2--driver-and-core-battery) | full | [#4](https://github.com/pedrobtz/zurngtest/issues/4) | [#39](https://github.com/pedrobtz/zurngtest/pull/39) | 2026-10-24 |
-| 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | | |
+| 3 | [R generators, interleaving and the C callable](#stage-3--r-generators-interleaving-and-the-c-callable) | quick | [#5](https://github.com/pedrobtz/zurngtest/issues/5) | | 2026-10-24 |
 | 4 | [Known results and RNG_test equivalence](#stage-4--known-results-and-rng_test-equivalence) | quick | [#6](https://github.com/pedrobtz/zurngtest/issues/6) | | |
 | 5 | [Documentation and zurand](#stage-5--documentation-and-zurand) | quick | [#7](https://github.com/pedrobtz/zurngtest/issues/7) | | |
 | 6 | [Full CI](#stage-6--full-ci) | full | [#8](https://github.com/pedrobtz/zurngtest/issues/8) | | |
@@ -237,6 +237,37 @@ interleaved sources, and the registered C callable for generator packages.
   unchanged after a run, byte-exact interleaving, and the C callable
   returning the same result as `pract_test()` on the same words.
 - `R_init_zurngtest` is still the only exported symbol.
+
+**Recorded** (2026-10-24): how each `RNGkind()` reaches `runif()`, from R's
+`src/main/RNG.c`, checked on 1e5 draws of each kind.
+
+| Kind | `unif_rand()` | Tested as |
+| --- | --- | --- |
+| Mersenne-Twister | y / 2^32 | exact 32-bit integers |
+| Marsaglia-Multicarry, Super-Duper | x / (2^32 - 1) | exact 32-bit integers |
+| L'Ecuyer-CMRG | x / (m1 + 1), x in 1..m1 | exact integers |
+| Knuth-TAOCP, Knuth-TAOCP-2002 | x / 2^30 | exact 30-bit integers, bit-packed |
+| Wichmann-Hill | sum of three fractions | 32 most significant bits |
+| user-supplied | unknown | 32 most significant bits |
+
+**Deviations** (2026-10-24).
+
+- The design expected L'Ecuyer-CMRG to need its 32 most significant bits;
+  its integers are exactly recoverable, so they are tested instead.
+- Knuth-TAOCP's 30-bit integers are packed into a continuous bit stream
+  rather than taken as the top 32 bits of the double, whose two constant
+  low bits would fail on their own.
+- Each `pract_rng()` reader keeps its own `.Random.seed` and swaps it in
+  only while it draws, rather than holding the session's generator for the
+  whole run. The session's stream is untouched between draws, and two
+  `pract_rng()` sources can be interleaved.
+- `pract_interleave()` needs sources of one word size (bytes for
+  `pract_raw()` and Knuth sources).
+- The C callable runs `pract_test()` with a source whose chunks the C fill
+  function writes directly into a raw vector (`zrt_cfun_fill`), so R
+  orchestrates one call per 16 MiB chunk rather than none.
+- `Imports: stats` for `runif()`; `stats` ships with R, so there is still no
+  hard dependency beyond R.
 
 **Design.** §5.1, §5.2, §4 (D3, D4).
 

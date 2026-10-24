@@ -10,3 +10,9 @@
   `print()` method in the style of `RNG_test`.
 * `pract_raw()` and `pract_fun()` make sources from raw bytes, connections
   and R functions.
+* `pract_rng()` tests one of R's own generators on its own bits, recovering
+  the integers behind `runif()` where they exist, and leaves the session's
+  random number stream as it was.
+* `pract_interleave()` combines sources word by word, for seeding studies.
+* Packages can test a generator written in C through the registered callable
+  `zurngtest_test_cfun()`, declared in `inst/include/zurngtest.h`.
