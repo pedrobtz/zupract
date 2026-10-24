@@ -27,7 +27,16 @@ test_that("the shared library exports only R_init_zurngtest", {
   } else {
     c("-D", "--defined-only")
   }
-  expect_equal(nm_symbols(args), "R_init_zurngtest")
+  # libstdc++ declares namespace std with default visibility, so the
+  # instantiations of std::vector, std::string and the like that the library
+  # uses stay exported under -fvisibility=hidden. They are not the package's
+  # symbols; every other one must be hidden.
+  std_symbol <- "^_Z(T[ISV])?N?K?(St|9__gnu_cxx)"
+  exported <- nm_symbols(args)
+  expect_equal(
+    grep(std_symbol, exported, value = TRUE, invert = TRUE),
+    "R_init_zurngtest"
+  )
 })
 
 test_that("compiled code links nothing that writes to the console or ends R", {
