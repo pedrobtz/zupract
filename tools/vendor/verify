@@ -22,7 +22,12 @@ FAILURES="$WORK/failures"
 : > "$FAILURES"
 
 if [ "$CANARY" -eq 1 ]; then
-  tools/vendor/derive "$WORK/tree" --skip-first
+  # Later patches may not apply without the first; a derivation that cannot
+  # be built is the failure the canary is looking for.
+  if ! tools/vendor/derive "$WORK/tree" --skip-first 2> "$WORK/derive.err"; then
+    echo "==> canary OK: the tree cannot be derived with a patch left out"
+    exit 0
+  fi
 else
   tools/vendor/derive "$WORK/tree"
 fi

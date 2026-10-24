@@ -11,6 +11,7 @@ Vendored dependency: PractRand, by Chris Doty-Humphrey
   Local patches: applied in this order, from tools/patches/
                  0001-no-stdio.patch
                  0002-cran-warnings.patch
+                 0003-portability.patch
 
 src/practrand/ is tools/vendor/derive's output: upstream's include/ and src/
 trees without RNGs/other/, and doc/license.txt as LICENSE, with line endings
@@ -73,3 +74,23 @@ The template shifts by BITS_PER_BLOCK in NearSeq that the pragmas hid
 check. 0002 is hand-made: on an update, apply it to the new tree, fix what
 no longer applies, and regenerate it with diff -ruN against the tree with
 0001 alone (tools/vendor/derive with only 0001 listed).
+
+0003-portability.patch, also hand-made, covers what 0002 missed because it
+was measured as C++17 on x86_64 against R 4.5.2's list of significant
+warnings. R-devel's list adds C++20 deprecations, R now compiles packages
+as C++20 by default, and CRAN's macOS builds are arm64:
+
+  - platform_specifics.cpp includes <x86intrin.h> and calls __rdtsc() for
+    any GNU compiler; both are now limited to x86, and the fallback, which
+    returned a clock object rather than a count, returns the count;
+  - arithmetic between enumerators of different anonymous enums, or between
+    an enumerator and a double, is deprecated in C++20; on each such line
+    the enumerators get a unary +, which promotes them to their integer
+    type without changing the value;
+  - three more reads of the blocks before `data` go through a pointer cast,
+    as in 0002, for GCC's -Warray-bounds at C++20.
+
+Measured 2026-10-24 against R-devel's src/library/tools/R/check.R, with
+GCC 15 (C++17 and C++20) and Apple clang 17 (C++17; C++20 for x86_64 and
+arm64): no significant warnings. Regenerate 0003 against the tree with 0001
+and 0002 applied.

@@ -1,0 +1,547 @@
+diff -ruN a/src/platform_specifics.cpp b/src/platform_specifics.cpp
+--- a/src/platform_specifics.cpp
++++ b/src/platform_specifics.cpp
+@@ -9,7 +9,9 @@
+ #ifdef _MSC_VER
+ #include <intrin.h>
+ #endif
+-#ifdef __GNUC__
++// Modified for the zurngtest R package: x86 intrinsics on x86 only, so the
++// library also builds on arm64.
++#if defined __GNUC__ && (defined __i386__ || defined __x86_64__)
+ #include <x86intrin.h>
+ #endif
+ #include <string>
+@@ -43,10 +45,10 @@
+ Sint64 PractRand::Internals::high_resolution_time() {
+ #if defined _MSC_VER && ((defined _M_IX86 && _M_IX86 >= 500) || defined _M_X64 || defined _M_AMD64)
+ 	return __rdtsc();
+-#elif defined __GNUC__
++#elif defined __GNUC__ && (defined __i386__ || defined __x86_64__)
+ 	return __rdtsc();
+ #else
+-	return std::chrono::high_resolution_clock();
++	return Sint64(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+ #endif
+ }
+ 
+diff -ruN a/src/sha2.cpp b/src/sha2.cpp
+--- a/src/sha2.cpp
++++ b/src/sha2.cpp
+@@ -22,40 +22,40 @@
+ 			static const Uint64 initial_values[8];
+ 			static inline Word PREPROCESS_SHIFT_S0_1(Word value) {
+ 				enum {SHIFT=1};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word PREPROCESS_SHIFT_S0_2(Word value) {
+ 				enum {SHIFT=8};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word PREPROCESS_SHIFT_S0_3(Word value) {
+ 				enum {SHIFT=7};
+ 				return value >> SHIFT;}
+ 			static inline Word PREPROCESS_SHIFT_S1_1(Word value) {
+ 				enum {SHIFT=19};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word PREPROCESS_SHIFT_S1_2(Word value) {
+ 				enum {SHIFT=61};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word PREPROCESS_SHIFT_S1_3(Word value) {
+ 				enum {SHIFT=6};
+ 				return value >> SHIFT;}
+ 			static Word MAINLOOP_SHIFT_S0_1(Word value) {
+ 				enum {SHIFT=28};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word MAINLOOP_SHIFT_S0_2(Word value) {
+ 				enum {SHIFT=34};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word MAINLOOP_SHIFT_S0_3(Word value) {
+ 				enum {SHIFT=39};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word MAINLOOP_SHIFT_S1_1(Word value) {
+ 				enum {SHIFT=14};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word MAINLOOP_SHIFT_S1_2(Word value) {
+ 				enum {SHIFT=18};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 			static inline Word MAINLOOP_SHIFT_S1_3(Word value) {
+ 				enum {SHIFT=41};
+-				return (value >> SHIFT) | (value << (WORD_BITS-SHIFT));}
++				return (value >> +SHIFT) | (value << (+WORD_BITS-+SHIFT));}
+ 		};
+ 		const Uint64 SHA2_512_constants::initial_values[8] = {
+ 			0x6a09e667f3bcc908ULL, 0xbb67ae8584caa73bULL,
+@@ -223,10 +223,10 @@
+ 			enum { EXTRAS = sizeof(Word) * 2 + 1 };
+ 			input_buffer.as_byte[leftover_input_bytes] = 0x80;
+ 			std::memset( input_buffer.as_byte + leftover_input_bytes + 1, 0, Constants::INPUT_SIZE - leftover_input_bytes - 1);
+-			if (leftover_input_bytes > Constants::INPUT_SIZE - EXTRAS) {
++			if (leftover_input_bytes > +Constants::INPUT_SIZE - +EXTRAS) {
+ 				endianness_input();
+ 				process_block();
+-				std::memset(input_buffer.as_byte, 0, Constants::INPUT_SIZE - EXTRAS + 1);
++				std::memset(input_buffer.as_byte, 0, +Constants::INPUT_SIZE - +EXTRAS + 1);
+ 			}
+ 			input_buffer.as_word[Constants::INPUT_WORDS-1] = endianness_word(Word(length << 3));
+ 			if (sizeof(Word) < sizeof(Uint64)) {
+diff -ruN a/src/tests_core.cpp b/src/tests_core.cpp
+--- a/src/tests_core.cpp
++++ b/src/tests_core.cpp
+@@ -3887,7 +3887,7 @@
+ 
+ void PractRand::Tests::mod3_simple::init(PractRand::RNGs::vRNG *known_good) {
+ 	if (P2 / 2 >= K) issue_error("mod3_simple - bad internal configuration1");
+-	if (K != std::pow(3.0, EXP)) issue_error("mod3_simple - bad internal configuration2");
++	if (+K != std::pow(3.0, +EXP)) issue_error("mod3_simple - bad internal configuration2");
+ 	counts.reset_counts();
+ 	index = 0;//not actually necessary
+ 	blocks_tested = 0;
+@@ -4146,7 +4146,7 @@
+ void PractRand::Tests::mod3n::init(PractRand::RNGs::vRNG *known_good) {
+ 	TestBaseclass::init(known_good);
+ 	if (P2 / 2 >= K) issue_error("mod3n - bad internal configuration1");
+-	if (K != std::pow(3.0, EXP)) issue_error("mod3n - bad internal configuration2");
++	if (+K != std::pow(3.0, +EXP)) issue_error("mod3n - bad internal configuration2");
+ 	for (int i = 0; i < LEVELS; i++) {
+ 		levels[i].index = 0;
+ 		levels[i].odd = false;
+@@ -4449,7 +4449,7 @@
+ 	Uint64 bday_bits = cur_bday_bits;
+ 	double lambda = std::pow(double(num_buffered), 3.0) / std::exp2(bday_bits + 2);
+ 	if (lambda < 0.1) return;
+-	while (lambda > LAMBDA_PER_LEVEL && bday_bits < 64) {
++	while (lambda > +LAMBDA_PER_LEVEL && bday_bits < 64) {
+ 		bday_bits += TEST_BITS_STEP;
+ 		if (bday_bits > 64) bday_bits = 64;
+ 		lambda = std::pow(double(num_buffered), 3.0) / std::exp2(bday_bits + 2);
+@@ -4512,7 +4512,7 @@
+ 		if (cur_bday_bits < 64) {
+ 			if (total_flushes == 1) {
+ 				double tmp_lambda = cur_lambda * 8;
+-				while (tmp_lambda > LAMBDA_PER_LEVEL && cur_bday_bits < 64) {
++				while (tmp_lambda > +LAMBDA_PER_LEVEL && cur_bday_bits < 64) {
+ 					cur_bday_bits += TEST_BITS_STEP;
+ 					tmp_lambda *= std::exp2(-TEST_BITS_STEP);
+ 				}
+diff -ruN a/src/tests_other.cpp b/src/tests_other.cpp
+--- a/src/tests_other.cpp
++++ b/src/tests_other.cpp
+@@ -281,7 +281,7 @@
+ 	}
+ 	//correct probs for startup region:
+ 	double lopped = 0;
+-	double inv_total_samples = 1.0 / (blocks_tested * (TestBlock::SIZE/2.));
++	double inv_total_samples = 1.0 / (blocks_tested * (+TestBlock::SIZE/2.));
+ 	long highest_index = 0;
+ 	for (int i = 0; i < TSIZE; i++) {
+ 		int first, last;
+@@ -2171,7 +2171,7 @@
+ 		//if (L <= THRESHOLD) e = gap_log2_expected(std::pow(0.5, L));
+ 		//else e = gap_log2_expected(std::pow(0.5, 20)) + L - THRESHOLD;
+ 		if (L < THRESHOLD) e = gap_L2_expected_lookup[L - 1];
+-		else e = gap_L2_expected_lookup[THRESHOLD - 1] + L - THRESHOLD;
++		else e = gap_L2_expected_lookup[+THRESHOLD - 1] + L - +THRESHOLD;
+ 		//PractRand::Internals::no_printf("%d %.15f\n", i, e);
+ 		platter[i].gap_expected_inverse = std::pow(0.5, e);
+ 		//platter[i].gap_expected_inverse = std::pow(0.5, L-1);
+@@ -2765,7 +2765,7 @@
+ 	const int lambda_L2 = BUFFER_SIZE_L2 * 3 - 32 - 2;
+ 	if (lambda_L2 < 1) issue_error("Birthday32 - bad configuration");
+ 	const double lambda = 1 << lambda_L2;
+-	for (int i = 0; i < MAX_DUPLICATES + lambda * 4; i++) {
++	for (int i = 0; i < +MAX_DUPLICATES + lambda * 4; i++) {
+ 		double p = std::exp(-lambda) * std::pow(lambda, i) / math_factorial(i);
+ 		if (i < MAX_DUPLICATES) probs[i] = p;
+ 		else probs[MAX_DUPLICATES - 1] += p;
+@@ -3021,7 +3021,7 @@
+ 	if (total < 200) return;
+ 	double probs[MAX_DUPLICATES];
+ 	const double lambda = std::pow(2.0, BUFFER_SIZE_L2 * 3 - 64 - 2);
+-	for (int i = 0; i < MAX_DUPLICATES + lambda * 4; i++) {
++	for (int i = 0; i < +MAX_DUPLICATES + lambda * 4; i++) {
+ 		double p = std::exp(-lambda) * std::pow(lambda, i) / math_factorial(i);
+ 		if (i < MAX_DUPLICATES) probs[i] = p;
+ 		else probs[MAX_DUPLICATES - 1] += p;
+@@ -3156,7 +3156,7 @@
+ 			}
+ 		}
+ 	}
+-	long shift = 64 - COMBINED_PASSES * SORT_HELPER_BITS - bits_already;
++	long shift = 64 - +COMBINED_PASSES * +SORT_HELPER_BITS - bits_already;
+ 	for (long dimension = COMBINED_PASSES - 1; dimension >= 0; dimension--) {
+ 		// now the actual sorting passes, least significant first
+ 		Uint64 *region_base = &regions[dimension << SORT_HELPER_BITS];
+@@ -3169,7 +3169,7 @@
+ 		i128 *tmp = buffer; buffer = dest; dest = tmp;
+ 	}
+ 	// now the copy and recursive sorting in case that wasn't enough:
+-	Uint64 sorted_mask = Uint64(0) - Uint64((1ull << (64 - SORT_HELPER_BITS * COMBINED_PASSES - bits_already)) - 1);
++	Uint64 sorted_mask = Uint64(0) - Uint64((1ull << (64 - +SORT_HELPER_BITS * +COMBINED_PASSES - bits_already)) - 1);
+ 	Uint64 run_value = buffer[0].high & sorted_mask;
+ 	Uint64 run_length = 0;
+ 	for (long i = 1; i < (1 << SORT_HELPER_BITS); i++) {
+@@ -3520,7 +3520,7 @@
+ 			}
+ 		}
+ 	}
+-	long shift = 64 - COMBINED_PASSES * SORT_HELPER_BITS - bits_already;
++	long shift = 64 - +COMBINED_PASSES * +SORT_HELPER_BITS - bits_already;
+ 	for (long dimension = COMBINED_PASSES - 1; dimension >= 0; dimension--) {
+ 		// now the actual sorting passes, least significant first
+ 		Uint64 *region_base = &regions[dimension << SORT_HELPER_BITS];
+@@ -3533,7 +3533,7 @@
+ 		Uint64 *tmp = buffer; buffer = dest; dest = tmp;
+ 	}
+ 	// now the copy and recursive sorting in case that wasn't enough:
+-	Uint64 sorted_mask = Uint64(0) - Uint64((1ull << (64 - SORT_HELPER_BITS * COMBINED_PASSES - bits_already)) - 1);
++	Uint64 sorted_mask = Uint64(0) - Uint64((1ull << (64 - +SORT_HELPER_BITS * +COMBINED_PASSES - bits_already)) - 1);
+ 	Uint64 run_value = buffer[0] & sorted_mask;
+ 	Uint64 run_length = 0;
+ 	for (long i = 1; i < (1 << SORT_HELPER_BITS); i++) {
+@@ -4293,8 +4293,8 @@
+ 	}
+ 	if (true) {
+ 		enum { INCLUDE_NON_MATCHES = 0 };// 0 or 1
+-		std::vector<Uint64> counts2; counts2.resize(TOTAL_SIZE + INCLUDE_NON_MATCHES);
+-		std::vector<double> probs2; probs2.resize(TOTAL_SIZE + INCLUDE_NON_MATCHES);
++		std::vector<Uint64> counts2; counts2.resize(+TOTAL_SIZE + +INCLUDE_NON_MATCHES);
++		std::vector<double> probs2; probs2.resize(+TOTAL_SIZE + +INCLUDE_NON_MATCHES);
+ 		std::copy(&_counts[0], &_counts[TOTAL_SIZE], &counts2[0]);
+ 		double any_match_prob = std::pow(0.5, INCLUDE_NON_MATCHES ? ZERO_FILTER_BITS : 0);
+ 		double specific_match_prob = any_match_prob * std::pow(0.5, PATTERN_INDEX_BITS);
+@@ -4305,11 +4305,11 @@
+ 		if (total_matches < 100) return;
+ 		if (INCLUDE_NON_MATCHES) counts2[TOTAL_SIZE] = total_opportunities - total_matches;
+ 		if (total_opportunities > 300) {
+-			double rarity = Tests::rarity_test(TOTAL_SIZE + INCLUDE_NON_MATCHES, &probs2[0], &counts2[0], false, true);
++			double rarity = Tests::rarity_test(+TOTAL_SIZE + +INCLUDE_NON_MATCHES, &probs2[0], &counts2[0], false, true);
+ 			std::ostringstream ss; ss << get_name() << "(*,r)"; results.push_back(TestResult(ss.str(), rarity, 0, TestResult::TYPE_RAW_NORMAL, 0.125));
+ 		}
+ 		if (total_opportunities > 3000) {
+-			int n = Tests::simplify_prob_table(TOTAL_SIZE + INCLUDE_NON_MATCHES, (INCLUDE_NON_MATCHES ? total_opportunities : total_matches) / 40.0, &probs2[0], &counts2[0], false, false);
++			int n = Tests::simplify_prob_table(+TOTAL_SIZE + +INCLUDE_NON_MATCHES, (+INCLUDE_NON_MATCHES ? total_opportunities : total_matches) / 40.0, &probs2[0], &counts2[0], false, false);
+ 			double raw = Tests::g_test(n, &probs2[0], &counts2[0]);
+ 			double norm = Tests::math_chisquared_to_normal(raw, n - 1);
+ 			std::ostringstream ss; ss << get_name() << "(*,g)"; results.push_back(TestResult(ss.str(), norm, 0, TestResult::TYPE_RAW_NORMAL, 0.125));
+@@ -4322,13 +4322,13 @@
+ 		std::copy(&_counts[pi * BASE_SIZE], &_counts[pi * BASE_SIZE + BASE_SIZE], &local_counts[0]);
+ 		if (true) {
+ 			double rarity = Tests::rarity_test(BASE_SIZE, &local_probs[0], &local_counts[0], false, true);
+-			std::ostringstream ss; ss << get_name() << "(" << pi << ",r)"; results.push_back(TestResult(ss.str(), rarity, 0, TestResult::TYPE_RAW_NORMAL, 0.001 / TOTAL_PATTERNS));
++			std::ostringstream ss; ss << get_name() << "(" << pi << ",r)"; results.push_back(TestResult(ss.str(), rarity, 0, +TestResult::TYPE_RAW_NORMAL, 0.001 / +TOTAL_PATTERNS));
+ 		}
+ 		if (patterns[pi].total_count > 300) {
+ 			int n = Tests::simplify_prob_table(BASE_SIZE, patterns[pi].total_count / 40.0, &local_probs[0], &local_counts[0], false, false);
+ 			double raw = Tests::g_test(n, &local_probs[0], &local_counts[0]);
+ 			double norm = Tests::math_chisquared_to_normal(raw, n - 1);
+-			std::ostringstream ss; ss << get_name() << "(" << pi << ",g)"; results.push_back(TestResult(ss.str(), norm, 0, TestResult::TYPE_RAW_NORMAL, 0.001 / TOTAL_PATTERNS));
++			std::ostringstream ss; ss << get_name() << "(" << pi << ",g)"; results.push_back(TestResult(ss.str(), norm, 0, +TestResult::TYPE_RAW_NORMAL, 0.001 / +TOTAL_PATTERNS));
+ 		}
+ 	}
+ 
+@@ -4633,7 +4633,7 @@
+ 	}
+ 	else { // they do evenly divide
+ 		enum {BLOCKS_PER_WORD = WORD_BITS / BITS_PER_BLOCK};
+-		enum {MAX_FULL_WORDS = BLOCKS_PER_CORE / BLOCKS_PER_WORD};
++		enum {MAX_FULL_WORDS = +BLOCKS_PER_CORE / +BLOCKS_PER_WORD};
+ 		for (int word = 1; word < MAX_FULL_WORDS; word++) {
+ 			w = core[word];
+ 			for (int i = 0; i < BLOCKS_PER_WORD; i++) {
+@@ -4643,9 +4643,9 @@
+ 			}
+ 			if (flags & 128) return -1;
+ 		}
+-		if (!(BLOCKS_PER_CORE % BLOCKS_PER_WORD)) return index;
++		if (!(+BLOCKS_PER_CORE % +BLOCKS_PER_WORD)) return index;
+ 		w = core[(CORE_SEQUENCE_BITS - 1) / WORD_BITS];
+-		for (int i = 0; i < (BLOCKS_PER_CORE % BLOCKS_PER_WORD); i++) {
++		for (int i = 0; i < (+BLOCKS_PER_CORE % +BLOCKS_PER_WORD); i++) {
+ 			flags |= lookup_table[w & ((1 << BITS_PER_BLOCK) - 1)];
+ 			index |= lookup_table[w & ((1 << BITS_PER_BLOCK) - 1)] << obit++;
+ 			w >>= BITS_PER_BLOCK;
+@@ -4682,7 +4682,7 @@
+ 	for (int i = 0; i < SEQUENCE_WORD_OFFSET; i++) extra_distance += _count_ones(core[i - SEQUENCE_WORD_OFFSET] ^ buckets[bucket_index].sequence[i]);
+ 	if (CORE_SEQUENCE_BITS % WORD_BITS) {
+ 		enum { INDEX = CORE_SEQUENCE_BITS / WORD_BITS };
+-		extra_distance += _count_ones((core[INDEX] ^ buckets[bucket_index].sequence[INDEX + SEQUENCE_WORD_OFFSET]) >> (CORE_SEQUENCE_BITS % WORD_BITS));
++		extra_distance += _count_ones((core[+INDEX] ^ buckets[bucket_index].sequence[+INDEX + +SEQUENCE_WORD_OFFSET]) >> (+CORE_SEQUENCE_BITS % +WORD_BITS));
+ 	}
+ 	for (int i = (CORE_SEQUENCE_BITS + WORD_BITS - 1) / WORD_BITS; i < SEQUENCE_BITS / WORD_BITS - SEQUENCE_WORD_OFFSET; i++) 
+ 		extra_distance += _count_ones(core[i] ^ buckets[bucket_index].sequence[i + SEQUENCE_WORD_OFFSET]);
+@@ -4964,8 +4964,8 @@
+ 		enum { FINAL_WORD_BITS = WORD_BITS - EXTRA1_PARTIAL_WORD_BITS };
+ 		Word w2 = core[INDEX];
+ 		w |= w2 << USABLE_BITS;
+-		if (USABLE_BITS + FINAL_WORD_BITS <= WORD_BITS - WORD_LEFTOVERS) {
+-			for (int i = 0; i < (USABLE_BITS + FINAL_WORD_BITS) / BITS_PER_BLOCK; i++) {
++		if (+USABLE_BITS + +FINAL_WORD_BITS <= +WORD_BITS - +WORD_LEFTOVERS) {
++			for (int i = 0; i < (+USABLE_BITS + +FINAL_WORD_BITS) / +BITS_PER_BLOCK; i++) {
+ 				is_bad |= lookup1(w);
+ 				w >>= BITS_PER_BLOCK;
+ 			}
+@@ -4975,7 +4975,7 @@
+ 				is_bad |= lookup1(w);
+ 				w >>= BITS_PER_BLOCK;
+ 			}
+-			w = w2 >> (WORD_BITS - USABLE_BITS - WORD_LEFTOVERS);
++			w = w2 >> (+WORD_BITS - +USABLE_BITS - +WORD_LEFTOVERS);
+ 			is_bad |= lookup1(w);
+ 		}
+ 		if (is_bad < 0) return true;
+@@ -5048,8 +5048,8 @@
+ 		enum { FINAL_WORD_BITS = WORD_BITS - EXTRA1_PARTIAL_WORD_BITS };
+ 		Word w2 = core[INDEX];
+ 		w |= w2 << USABLE_BITS;
+-		if (USABLE_BITS + FINAL_WORD_BITS <= WORD_BITS - WORD_LEFTOVERS) {
+-			for (int i = 0; i < (USABLE_BITS + FINAL_WORD_BITS) / BITS_PER_BLOCK; i++) {
++		if (+USABLE_BITS + +FINAL_WORD_BITS <= +WORD_BITS - +WORD_LEFTOVERS) {
++			for (int i = 0; i < (+USABLE_BITS + +FINAL_WORD_BITS) / +BITS_PER_BLOCK; i++) {
+ 				analyze_block(w, core_bucket, bucket_bit++, h);
+ 				w >>= BITS_PER_BLOCK;
+ 			}
+@@ -5059,7 +5059,7 @@
+ 				analyze_block(w, core_bucket, bucket_bit++, h);
+ 				w >>= BITS_PER_BLOCK;
+ 			}
+-			w = w2 >> (WORD_BITS - USABLE_BITS - WORD_LEFTOVERS);
++			w = w2 >> (+WORD_BITS - +USABLE_BITS - +WORD_LEFTOVERS);
+ 			analyze_block(w, core_bucket, bucket_bit++, h);
+ 		}
+ 	}
+@@ -5218,8 +5218,8 @@
+ 			results.push_back(TestResult(os.str(), normalized, p, TestResult::TYPE_BAD_P, 0.01));
+ 		}
+ 		if (total_valid_cores > NUM_BUCKETS * 50 && worst_n && true) {
+-			if (worst_p < 0.5) worst_p *= NUM_BUCKETS;
+-			else worst_p = 1 - ((1 - worst_p) * NUM_BUCKETS);
++			if (worst_p < 0.5) worst_p *= +NUM_BUCKETS;
++			else worst_p = 1 - ((1 - worst_p) * +NUM_BUCKETS);
+ 			if (worst_p < 0 || worst_p > 1) worst_p = 0.5;
+ 			std::ostringstream os;
+ 			os << get_name() << ":WB" << worst_b;
+@@ -5304,10 +5304,10 @@
+ 			for (long pos = start - (CORE_WORDS - 1); pos < start; pos++) {
+ 				Word w;
+ 				if (0) ;
+-				else if (WORD_BITS == 8) w = data[0].as8[pos];
+-				else if (WORD_BITS == 16) w = data[0].as16[pos];
+-				else if (WORD_BITS == 32) w = data[0].as32[pos];
+-				else if (WORD_BITS == 64) w = data[0].as64[pos];
++				else if (WORD_BITS == 8) w = reinterpret_cast<Uint8 *>(data)[pos];
++				else if (WORD_BITS == 16) w = reinterpret_cast<Uint16 *>(data)[pos];
++				else if (WORD_BITS == 32) w = reinterpret_cast<Uint32 *>(data)[pos];
++				else if (WORD_BITS == 64) w = reinterpret_cast<Uint64 *>(data)[pos];
+ 				else issue_error("NearS2 - what word size???");
+ 				invalid_words_window <<= 1;
+ 				invalid_words_window |= is_word_bad(w) ? 1 : 0;
+@@ -5427,7 +5427,7 @@
+ 		long long num_bits = block_size * 8 * sizeof(Word);
+ 		//static char initial_threshold_lookup[2] = { 5, 7 };
+ 		//psd.threshold = (num_bits >> 1) - (initial_threshold_lookup[si & 1] << (si >> 1));
+-		psd.threshold = (num_bits >> 1) - std::sqrt(BITS_PER_WORD * 1.0 + si * 24.0) * std::pow(2.0, si * 0.5);
++		psd.threshold = (num_bits >> 1) - std::sqrt(+BITS_PER_WORD * 1.0 + si * 24.0) * std::pow(2.0, si * 0.5);
+ 		psd.count = 0;
+ 		psd.max_count = BUNCH_SIZE;
+ 		psd.partial_hw = 0;
+@@ -5490,7 +5490,7 @@
+ 		long new_threshold = threshold - 1;
+ 		while (new_threshold >= 0) {
+ 			new_rate = cdf[new_threshold];
+-			if (new_rate <= (THRESHOLD_TIGHTENING_FRACTION / 1000.0) * old_rate) break;
++			if (new_rate <= (+THRESHOLD_TIGHTENING_FRACTION / 1000.0) * old_rate) break;
+ 			new_threshold -= 1;
+ 		}
+ 		long filter_threshold = filter ? new_threshold : -1;
+@@ -5851,7 +5851,7 @@
+ 			double score_pd_both = 0;
+ 			double hw_variance = 0;
+ 			double pd_variance = 0;
+-			const double step_mult = std::pow(THRESHOLD_TIGHTENING_FRACTION / 1000.0, 1.5);//pretty sure the exponent should be above 0.5, but not sure how far above
++			const double step_mult = std::pow(+THRESHOLD_TIGHTENING_FRACTION / 1000.0, 1.5);//pretty sure the exponent should be above 0.5, but not sure how far above
+ 			const double step_mult2 = step_mult * step_mult;
+ 			for (long oi = 0; oi <= psd.old_thresholds.size(); oi++) {
+ 				ScoringData data;
+@@ -6402,7 +6402,7 @@
+ 		//subtest 3
+ 		double chisquared = g_test_flat(TOTAL_SIZE, counts2_);
+ 		//double n = math_chisquared_to_normal(chisquared, TOTAL_SIZE - 1);
+-		double n = math_chisquared_to_normal(chisquared, TOTAL_SIZE - NUMBER_OF_REGIONS);
++		double n = math_chisquared_to_normal(chisquared, +TOTAL_SIZE - +NUMBER_OF_REGIONS);
+ 		std::ostringstream buf;
+ 		buf << get_name() << ":all";
+ 		results.push_back(TestResult(buf.str(), n, n, TestResult::TYPE_RAW_NORMAL, 0.01));
+@@ -6442,7 +6442,7 @@
+ 					base_index += 1 << SIZE3;
+ 					window3 >>= WINDOW_ALIGNMENT;
+ 				}
+-				position += WINDOW_ALIGNMENT * N;
++				position += +WINDOW_ALIGNMENT * N;
+ 			}
+ 			if ((1 << POSITIONS3_L2) % N) {//the left-overs
+ 				Uint64 window3 = read_64_misaligned(data[0].as64, position);
+@@ -6499,7 +6499,7 @@
+ 		overall_cs1 += chisquared;
+ 		overall_n2 += n * n;
+ 	}
+-	overall_n2 = (std::sqrt(overall_n2 / (1 << POSITIONS_L2)) - 1.46) * std::pow(2.0, 0.5 * POSITIONS_L2);
++	overall_n2 = (std::sqrt(overall_n2 / (1 << +POSITIONS_L2)) - 1.46) * std::pow(2.0, 0.5 * +POSITIONS_L2);
+ 	std::ostringstream buf;
+ 	buf << get_name() << ":w(" << worst_position << ")";
+ 	results.push_back(TestResult(buf.str(), worst_n, worst_n, TestResult::TYPE_RAW_NORMAL, 0.01));
+@@ -6533,11 +6533,11 @@
+ 		enum { BASE_ALIGN = 1 << BASE_ALIGN_L2, POSITION_ALIGN = 1 << POSITION_ALIGN_L2, POSITIONS = 1 << POSITIONS_L2 };
+ 		for (long pos_code = 0; pos_code < POSITIONS; pos_code ++) {//0-based if BLOCK_STEP is used
+ 			unsigned long base_index = pos_code << (SIZE1 + SIZE2 + SIZE3);//0-based if BLOCK_STEP is used
+-			long ofs = BLOCK_STEP * TestBlock::SIZE - pos_code * POSITION_ALIGN;
++			long ofs = +BLOCK_STEP * +TestBlock::SIZE - pos_code * +POSITION_ALIGN;
+ 			for (long base_pos = -passes_at_once * BASE_ALIGN; base_pos < 0; base_pos += BASE_ALIGN) {
+ 				unsigned long index = base_index;
+ 				//Uint8 a = data[-BLOCK_STEP].as8[base_pos + 0], b = data[0].as8[base_pos + pos], c = data[-2 * BLOCK_STEP].as8[base_pos - pos];
+-				Uint8 a = data[0].as8[base_pos - 0], b = data[0].as8[base_pos - ofs], c = data[0].as8[base_pos - ofs - ofs];// if BLOCK_STEP is used
++				Uint8 a = reinterpret_cast<Uint8 *>(data)[base_pos - 0], b = reinterpret_cast<Uint8 *>(data)[base_pos - ofs], c = reinterpret_cast<Uint8 *>(data)[base_pos - ofs - ofs];// if BLOCK_STEP is used
+ 				//b -= a; a -= c; // nope.  these hurt more than they help, typically
+ 				index |= ((unsigned long)(a & ((1 << SIZE1) - 1))) << (SIZE2 + SIZE3);
+ 				index |= ((unsigned long)(b & ((1 << SIZE2) - 1))) << (SIZE3);
+@@ -6722,7 +6722,7 @@
+ 		overall_cs1 += chisquared;
+ 		overall_n2 += n * n;
+ 	}
+-	overall_n2 = (std::sqrt(overall_n2 / (1 << POSITIONS_L2)) - 1.46) * std::pow(2.0, 0.5 * POSITIONS_L2);
++	overall_n2 = (std::sqrt(overall_n2 / (1 << +POSITIONS_L2)) - 1.46) * std::pow(2.0, 0.5 * +POSITIONS_L2);
+ 	std::ostringstream buf;
+ 	buf << get_name() << ":w(" << worst_position << ")";
+ 	results.push_back(TestResult(buf.str(), worst_n, worst_n, TestResult::TYPE_RAW_NORMAL, 0.01));
+@@ -6757,11 +6757,11 @@
+ 		enum { BASE_ALIGN = 1 << BASE_ALIGN_L2, POSITION_ALIGN = 1 << POSITION_ALIGN_L2, POSITIONS = 1 << POSITIONS_L2 };
+ 		for (long pos_code = 0; pos_code < POSITIONS; pos_code++) {//0-based if BLOCK_STEP is used
+ 			unsigned long base_index = pos_code << (SIZE1 + SIZE2 + SIZE3);//0-based if BLOCK_STEP is used
+-			long ofs = BLOCK_STEP * TestBlock::SIZE - pos_code * POSITION_ALIGN;
++			long ofs = +BLOCK_STEP * +TestBlock::SIZE - pos_code * +POSITION_ALIGN;
+ 			for (long base_pos = -passes_at_once * BASE_ALIGN; base_pos < 0; base_pos += BASE_ALIGN) {
+ 				unsigned long index = base_index;
+ 				//Uint8 a = data[-BLOCK_STEP].as8[base_pos + 0], b = data[0].as8[base_pos + pos], c = data[-2 * BLOCK_STEP].as8[base_pos - pos];
+-				Uint8 a = data->as8[base_pos - 0], b = data->as8[base_pos - ofs], c = data->as8[base_pos - ofs - ofs];// if BLOCK_STEP is used
++				Uint8 a = reinterpret_cast<Uint8 *>(data)[base_pos - 0], b = reinterpret_cast<Uint8 *>(data)[base_pos - ofs], c = reinterpret_cast<Uint8 *>(data)[base_pos - ofs - ofs];// if BLOCK_STEP is used
+ 				//b -= a; a -= c; // nope.  these hurt more than they help, typically
+ 				index |= ((unsigned long)(a & ((1 << SIZE1) - 1))) << (SIZE2 + SIZE3);
+ 				index |= ((unsigned long)(b & ((1 << SIZE2) - 1))) << (SIZE3);
+diff -ruN a/src/xbg_helpers.cpp b/src/xbg_helpers.cpp
+--- a/src/xbg_helpers.cpp
++++ b/src/xbg_helpers.cpp
+@@ -651,7 +651,7 @@
+ 				}
+ 				else if (sizeof(rv) > sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(rv)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(rv)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
+ 					};
+ 					xw <<= L2DIFF;
+@@ -660,7 +660,7 @@
+ 				}
+ 				else if (sizeof(rv) < sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(rv)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(rv)>::value,
+ 						RATIO = 1 << L2DIFF
+ 					};
+ 					rv = data[y*ww + (xw >> L2DIFF)] >> ((xw & (RATIO - 1)) << (3 + Internals::StaticLog2<sizeof(rv)>::value));
+@@ -674,7 +674,7 @@
+ 				}
+ 				else if (sizeof(rv) > sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(rv)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(rv)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
+ 					};
+ 					xw <<= L2DIFF;
+@@ -683,7 +683,7 @@
+ 				}
+ 				else if (sizeof(rv) < sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(rv)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(rv)>::value,
+ 						RATIO = 1 << L2DIFF
+ 					};
+ 					rv = data[y*ww + (xw >> L2DIFF)] >> ((xw & (RATIO - 1)) << (3 + Internals::StaticLog2<sizeof(rv)>::value));
+@@ -697,7 +697,7 @@
+ 				}
+ 				else if (sizeof(rv) > sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(rv)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(rv)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
+ 					};
+ 					xw <<= L2DIFF;
+@@ -706,7 +706,7 @@
+ 				}
+ 				else if (sizeof(rv) < sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(rv)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(rv)>::value,
+ 						RATIO = 1 << L2DIFF
+ 					};
+ 					rv = data[y*ww + (xw >> L2DIFF)] >> ((xw & (RATIO - 1)) << (3 + Internals::StaticLog2<sizeof(rv)>::value));
+@@ -719,7 +719,7 @@
+ 				}
+ 				else if (sizeof(value) > sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
+ 					};
+ 					xw <<= L2DIFF;
+@@ -732,7 +732,7 @@
+ 				}
+ 				else if (sizeof(value) < sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << L2DIFF,
+ 						SHIFT_SHIFT = 3 + Internals::StaticLog2<sizeof(value)>::value
+ 					};
+@@ -748,7 +748,7 @@
+ 				}
+ 				else if (sizeof(value) > sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
+ 					};
+ 					xw <<= L2DIFF;
+@@ -761,7 +761,7 @@
+ 				}
+ 				else if (sizeof(value) < sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(value)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(value)>::value,
+ 						RATIO = 1 << L2DIFF,
+ 						SHIFT_SHIFT = 3 + Internals::StaticLog2<sizeof(value)>::value
+ 					};
+@@ -777,7 +777,7 @@
+ 				}
+ 				else if (sizeof(value) > sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
+ 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
+ 					};
+ 					xw <<= L2DIFF;
+@@ -790,7 +790,7 @@
+ 				}
+ 				else if (sizeof(value) < sizeof(Word)) {
+ 					enum {
+-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(value)>::value,
++						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(value)>::value,
+ 						RATIO = 1 << L2DIFF,
+ 						SHIFT_SHIFT = 3 + Internals::StaticLog2<sizeof(value)>::value
+ 					};

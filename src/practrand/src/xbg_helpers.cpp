@@ -651,7 +651,7 @@ namespace PractRand {
 				}
 				else if (sizeof(rv) > sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(rv)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(rv)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
 					};
 					xw <<= L2DIFF;
@@ -660,7 +660,7 @@ namespace PractRand {
 				}
 				else if (sizeof(rv) < sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(rv)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(rv)>::value,
 						RATIO = 1 << L2DIFF
 					};
 					rv = data[y*ww + (xw >> L2DIFF)] >> ((xw & (RATIO - 1)) << (3 + Internals::StaticLog2<sizeof(rv)>::value));
@@ -674,7 +674,7 @@ namespace PractRand {
 				}
 				else if (sizeof(rv) > sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(rv)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(rv)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
 					};
 					xw <<= L2DIFF;
@@ -683,7 +683,7 @@ namespace PractRand {
 				}
 				else if (sizeof(rv) < sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(rv)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(rv)>::value,
 						RATIO = 1 << L2DIFF
 					};
 					rv = data[y*ww + (xw >> L2DIFF)] >> ((xw & (RATIO - 1)) << (3 + Internals::StaticLog2<sizeof(rv)>::value));
@@ -697,7 +697,7 @@ namespace PractRand {
 				}
 				else if (sizeof(rv) > sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(rv)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(rv)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
 					};
 					xw <<= L2DIFF;
@@ -706,7 +706,7 @@ namespace PractRand {
 				}
 				else if (sizeof(rv) < sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(rv)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(rv)>::value,
 						RATIO = 1 << L2DIFF
 					};
 					rv = data[y*ww + (xw >> L2DIFF)] >> ((xw & (RATIO - 1)) << (3 + Internals::StaticLog2<sizeof(rv)>::value));
@@ -719,7 +719,7 @@ namespace PractRand {
 				}
 				else if (sizeof(value) > sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
 					};
 					xw <<= L2DIFF;
@@ -732,7 +732,7 @@ namespace PractRand {
 				}
 				else if (sizeof(value) < sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << L2DIFF,
 						SHIFT_SHIFT = 3 + Internals::StaticLog2<sizeof(value)>::value
 					};
@@ -748,7 +748,7 @@ namespace PractRand {
 				}
 				else if (sizeof(value) > sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
 					};
 					xw <<= L2DIFF;
@@ -761,7 +761,7 @@ namespace PractRand {
 				}
 				else if (sizeof(value) < sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(value)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(value)>::value,
 						RATIO = 1 << L2DIFF,
 						SHIFT_SHIFT = 3 + Internals::StaticLog2<sizeof(value)>::value
 					};
@@ -777,7 +777,7 @@ namespace PractRand {
 				}
 				else if (sizeof(value) > sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(value)>::value - Internals::StaticLog2<sizeof(Word)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(value)>::value - +Internals::StaticLog2<sizeof(Word)>::value,
 						RATIO = 1 << (L2DIFF > 0 ? L2DIFF : 0) // it's just 1<<L2DIFF, the extra stuff is there to silence compiler complaints when this codepath is inactive
 					};
 					xw <<= L2DIFF;
@@ -790,7 +790,7 @@ namespace PractRand {
 				}
 				else if (sizeof(value) < sizeof(Word)) {
 					enum {
-						L2DIFF = Internals::StaticLog2<sizeof(Word)>::value - Internals::StaticLog2<sizeof(value)>::value,
+						L2DIFF = +Internals::StaticLog2<sizeof(Word)>::value - +Internals::StaticLog2<sizeof(value)>::value,
 						RATIO = 1 << L2DIFF,
 						SHIFT_SHIFT = 3 + Internals::StaticLog2<sizeof(value)>::value
 					};

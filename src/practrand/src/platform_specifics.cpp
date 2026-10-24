@@ -9,7 +9,9 @@
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
-#ifdef __GNUC__
+// Modified for the zurngtest R package: x86 intrinsics on x86 only, so the
+// library also builds on arm64.
+#if defined __GNUC__ && (defined __i386__ || defined __x86_64__)
 #include <x86intrin.h>
 #endif
 #include <string>
@@ -43,10 +45,10 @@ using namespace PractRand;
 Sint64 PractRand::Internals::high_resolution_time() {
 #if defined _MSC_VER && ((defined _M_IX86 && _M_IX86 >= 500) || defined _M_X64 || defined _M_AMD64)
 	return __rdtsc();
-#elif defined __GNUC__
+#elif defined __GNUC__ && (defined __i386__ || defined __x86_64__)
 	return __rdtsc();
 #else
-	return std::chrono::high_resolution_clock();
+	return Sint64(std::chrono::high_resolution_clock::now().time_since_epoch().count());
 #endif
 }
 

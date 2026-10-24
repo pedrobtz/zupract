@@ -3887,7 +3887,7 @@ void PractRand::Tests::BRank::test_blocks(TestBlock *data, int numblocks) {
 
 void PractRand::Tests::mod3_simple::init(PractRand::RNGs::vRNG *known_good) {
 	if (P2 / 2 >= K) issue_error("mod3_simple - bad internal configuration1");
-	if (K != std::pow(3.0, EXP)) issue_error("mod3_simple - bad internal configuration2");
+	if (+K != std::pow(3.0, +EXP)) issue_error("mod3_simple - bad internal configuration2");
 	counts.reset_counts();
 	index = 0;//not actually necessary
 	blocks_tested = 0;
@@ -4146,7 +4146,7 @@ PractRand::Tests::mod3n::mod3n(int block_fraction_) : block_fraction(block_fract
 void PractRand::Tests::mod3n::init(PractRand::RNGs::vRNG *known_good) {
 	TestBaseclass::init(known_good);
 	if (P2 / 2 >= K) issue_error("mod3n - bad internal configuration1");
-	if (K != std::pow(3.0, EXP)) issue_error("mod3n - bad internal configuration2");
+	if (+K != std::pow(3.0, +EXP)) issue_error("mod3n - bad internal configuration2");
 	for (int i = 0; i < LEVELS; i++) {
 		levels[i].index = 0;
 		levels[i].odd = false;
@@ -4449,7 +4449,7 @@ void PractRand::Tests::BirthdaySystematic2::update_partial_buffer_results() {
 	Uint64 bday_bits = cur_bday_bits;
 	double lambda = std::pow(double(num_buffered), 3.0) / std::exp2(bday_bits + 2);
 	if (lambda < 0.1) return;
-	while (lambda > LAMBDA_PER_LEVEL && bday_bits < 64) {
+	while (lambda > +LAMBDA_PER_LEVEL && bday_bits < 64) {
 		bday_bits += TEST_BITS_STEP;
 		if (bday_bits > 64) bday_bits = 64;
 		lambda = std::pow(double(num_buffered), 3.0) / std::exp2(bday_bits + 2);
@@ -4512,7 +4512,7 @@ void PractRand::Tests::BirthdaySystematic2::flush_buffer() {
 		if (cur_bday_bits < 64) {
 			if (total_flushes == 1) {
 				double tmp_lambda = cur_lambda * 8;
-				while (tmp_lambda > LAMBDA_PER_LEVEL && cur_bday_bits < 64) {
+				while (tmp_lambda > +LAMBDA_PER_LEVEL && cur_bday_bits < 64) {
 					cur_bday_bits += TEST_BITS_STEP;
 					tmp_lambda *= std::exp2(-TEST_BITS_STEP);
 				}
