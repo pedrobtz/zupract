@@ -52,7 +52,10 @@ exported_symbols <- function() {
     }
     rows <- out[-seq_len(start[[1]])]
     rows <- rows[seq_len(match(TRUE, !nzchar(trimws(rows)), length(rows)))]
-    return(sub("^\\s*\\[\\s*[0-9]+\\]\\s+", "", rows[grepl("^\\s*\\[", rows)]))
+    # Rows look like "[   0] name" or, in newer binutils, "+base[   1]  0000
+    # name": the name is the last field.
+    rows <- rows[grepl("\\[\\s*[0-9]+\\]", rows)]
+    return(sub("^.*\\s", "", trimws(rows)))
   }
   if (Sys.info()[["sysname"]] == "Darwin") {
     nm_symbols("-gU")
