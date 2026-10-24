@@ -16,3 +16,5 @@
 * `pract_interleave()` combines sources word by word, for seeding studies.
 * Packages can test a generator written in C through the registered callable
   `zurngtest_test_cfun()`, declared in `inst/include/zurngtest.h`.
+* `pract_test()` gives the results PractRand's own `RNG_test` gives for the
+  same bytes, p-values near 0 and 1 included; a CI workflow checks this.
