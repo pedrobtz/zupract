@@ -1,0 +1,95 @@
+diff -ruN a/include/PractRand/test_helpers.h b/include/PractRand/test_helpers.h
+--- a/include/PractRand/test_helpers.h
++++ b/include/PractRand/test_helpers.h
+@@ -295,6 +295,8 @@
+ 		};
+ 		class TestCalibrationManager {
+ 			std::map<std::string, std::map< Uint64, TestCalibrationData * > > data;
++			// Modified for the zurngtest R package: set if the tables failed to load.
++			std::string load_error;
+ 		public:
+ 			TestCalibrationManager(const PractRand::Tests::RawTestCalibrationData_117 *raw_data_array117, const PractRand::Tests::RawTestCalibrationData_129 *raw_data_array129);
+ 			~TestCalibrationManager();
+diff -ruN a/src/tests_core.cpp b/src/tests_core.cpp
+--- a/src/tests_core.cpp
++++ b/src/tests_core.cpp
+@@ -10,6 +10,7 @@
+ #include <cstdlib>
+ #include <cstdio>
+ #include <cstring>
++#include <stdexcept>// Modified for the zurngtest R package
+ #include <algorithm>
+ 
+ #include "PractRand/config.h"
+@@ -406,19 +407,27 @@
+ 
+ 
+ PractRand::Tests::TestCalibrationManager::TestCalibrationManager(const PractRand::Tests::RawTestCalibrationData_117 *raw_data_array117, const PractRand::Tests::RawTestCalibrationData_129 *raw_data_array129) {
+-	for (int i = 0; raw_data_array117[i].name; i++) {
+-		// Modified for the zurngtest R package: the tables list some entries
+-		// twice, and overwriting the pointer leaked the first copy.
+-		TestCalibrationData *&slot = data[raw_data_array117[i].name][raw_data_array117[i].blocks];
+-		delete slot;
+-		slot = new TestCalibrationData(&raw_data_array117[i]);
++	// Modified for the zurngtest R package: this runs during static
++	// initialisation, where an exception from issue_error() would terminate
++	// the process. Record the error instead; using the tables raises it.
++	try {
++		for (int i = 0; raw_data_array117[i].name; i++) {
++			// Modified for the zurngtest R package: the tables list some entries
++			// twice, and overwriting the pointer leaked the first copy.
++			TestCalibrationData *&slot = data[raw_data_array117[i].name][raw_data_array117[i].blocks];
++			delete slot;
++			slot = new TestCalibrationData(&raw_data_array117[i]);
++		}
++		for (int i = 0; raw_data_array129[i].name; i++) {
++			// Modified for the zurngtest R package: the tables list some entries
++			// twice, and overwriting the pointer leaked the first copy.
++			TestCalibrationData *&slot = data[raw_data_array129[i].name][raw_data_array129[i].blocks];
++			delete slot;
++			slot = new TestCalibrationData(&raw_data_array129[i]);
++		}
+ 	}
+-	for (int i = 0; raw_data_array129[i].name; i++) {
+-		// Modified for the zurngtest R package: the tables list some entries
+-		// twice, and overwriting the pointer leaked the first copy.
+-		TestCalibrationData *&slot = data[raw_data_array129[i].name][raw_data_array129[i].blocks];
+-		delete slot;
+-		slot = new TestCalibrationData(&raw_data_array129[i]);
++	catch (const std::exception &e) {
++		load_error = e.what();
+ 	}
+ }
+ PractRand::Tests::TestCalibrationManager::~TestCalibrationManager() {
+@@ -429,6 +438,7 @@
+ 	}
+ }
+ Uint64 PractRand::Tests::TestCalibrationManager::get_minimum_length(std::string name) {
++	if (!load_error.empty()) issue_error(load_error.c_str());// Modified for the zurngtest R package
+ 	std::map<std::string, std::map< Uint64, TestCalibrationData * > >::iterator dit = data.find(name);
+ 	if (dit == data.end()) return 0;
+ 	std::map< Uint64, TestCalibrationData * > &ts = dit->second;
+@@ -436,6 +446,7 @@
+ 	return ts.begin()->first;
+ }
+ PractRand::Tests::TestCalibrationData *PractRand::Tests::TestCalibrationManager::get_calibration_data(std::string name, Uint64 blocks) {
++	if (!load_error.empty()) issue_error(load_error.c_str());// Modified for the zurngtest R package
+ 	std::map<std::string, std::map< Uint64, TestCalibrationData * > >::iterator dit = data.find(name);
+ 	if (dit == data.end()) return NULL;
+ 	std::map< Uint64, TestCalibrationData * > &ts = dit->second;
+diff -ruN a/src/tests_other.cpp b/src/tests_other.cpp
+--- a/src/tests_other.cpp
++++ b/src/tests_other.cpp
+@@ -5415,8 +5415,10 @@
+ 	*/
+ }
+ PractRand::Tests::NearSeq3::~NearSeq3() {
+-	if (NUM_SIZES < 4) issue_error();//optimization assumes there's at least that many
+-	if (THRESHOLD_TIGHTENING_FRACTION >= 9000) issue_error();//is parts per ten-thousand
++	// Modified for the zurngtest R package: a throw from a destructor would
++	// terminate the process; these are compile-time constants.
++	static_assert(NUM_SIZES >= 4, "optimization assumes there's at least that many");
++	static_assert(THRESHOLD_TIGHTENING_FRACTION < 9000, "is parts per ten-thousand");
+ }
+ void PractRand::Tests::NearSeq3::init(PractRand::RNGs::vRNG *known_good) {
+ 	TestBaseclass::init(known_good);

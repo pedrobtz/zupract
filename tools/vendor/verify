@@ -1,12 +1,16 @@
 #!/bin/sh
 # Verify that src/practrand/ is the pinned PractRand archive plus exactly the
-# patch series in tools/patches/, byte for byte. Exits non-zero on any
-# difference. Run from the package root.
+# patch series in tools/patches/, byte for byte, and that src/Makevars builds
+# every vendored source file. Exits non-zero on any difference. Run from the
+# package root.
 #
 #   tools/vendor/verify            the gate
-#   tools/vendor/verify --canary   the gate's canary: derive the tree with the
-#                                  first patch left out and require
-#                                  verification to FAIL
+#   tools/vendor/verify --canary   the gate's canary: compare the derived tree
+#                                  with a copy of src/practrand/ that has one
+#                                  file changed, one removed and one added,
+#                                  and require the comparison to report all
+#                                  three. Failing to derive the tree fails
+#                                  the canary too.
 set -eu
 
 CANARY=0
@@ -21,15 +25,46 @@ trap 'rm -rf "$WORK"' EXIT
 FAILURES="$WORK/failures"
 : > "$FAILURES"
 
+if ! tools/vendor/derive "$WORK/tree" 2> "$WORK/derive.err"; then
+  cat "$WORK/derive.err" >&2
+  echo "==> could not derive the tree from the pinned archive and patches" >&2
+  exit 1
+fi
+
+# compare <dir>: record every difference between the derived tree and <dir>.
+# Build artefacts are ignored, since R builds in place, and so is PROVENANCE,
+# which is not derived.
+compare() {
+  (cd "$WORK/tree" && find . -type f | sort) > "$WORK/derived"
+  (cd "$1" && find . -type f ! -name PROVENANCE \
+    ! -name '*.o' ! -name '*.so' ! -name '*.dll' ! -name '*.dylib' | sort) > "$WORK/local"
+  comm -23 "$WORK/derived" "$WORK/local" |
+    sed 's|^\./|FAIL: missing src/practrand/|' >> "$FAILURES"
+  comm -13 "$WORK/derived" "$WORK/local" |
+    sed 's|^\./|FAIL: not derived from upstream: src/practrand/|' >> "$FAILURES"
+  while read -r f; do
+    if [ -f "$1/$f" ] && ! cmp -s "$WORK/tree/$f" "$1/$f"; then
+      echo "FAIL: src/practrand/${f#./} differs from upstream plus patches" >> "$FAILURES"
+    fi
+  done < "$WORK/derived"
+}
+
 if [ "$CANARY" -eq 1 ]; then
-  # Later patches may not apply without the first; a derivation that cannot
-  # be built is the failure the canary is looking for.
-  if ! tools/vendor/derive "$WORK/tree" --skip-first 2> "$WORK/derive.err"; then
-    echo "==> canary OK: the tree cannot be derived with a patch left out"
-    exit 0
-  fi
-else
-  tools/vendor/derive "$WORK/tree"
+  cp -R src/practrand "$WORK/local-copy"
+  printf '\n' >> "$WORK/local-copy/src/math.cpp"
+  rm "$WORK/local-copy/src/sha2.cpp"
+  : > "$WORK/local-copy/src/canary.cpp"
+  compare "$WORK/local-copy"
+  for want in "differs from upstream plus patches" "missing src/practrand/src/sha2.cpp" \
+    "not derived from upstream: src/practrand/src/canary.cpp"; do
+    if ! grep -q "$want" "$FAILURES"; then
+      cat "$FAILURES" >&2
+      echo "CANARY FAILED: the comparison did not report: $want" >&2
+      exit 1
+    fi
+  done
+  echo "==> canary OK: the comparison reported a changed, a missing and an extra file"
+  exit 0
 fi
 
 # The patch series on disk must be exactly what PROVENANCE lists, in order.
@@ -39,35 +74,22 @@ ls tools/patches/*.patch 2>/dev/null | xargs -n1 basename > "$WORK/present" || t
 cmp -s "$WORK/listed" "$WORK/present" ||
   echo "FAIL: tools/patches/ does not match the patch list in $PROV" >> "$FAILURES"
 
-# Every derived file must be present and identical, and nothing may be in
-# src/practrand/ that the derivation did not produce, apart from PROVENANCE
-# and build artefacts: R builds in place.
-(cd "$WORK/tree" && find . -type f | sort) > "$WORK/derived"
-(cd src/practrand && find . -type f ! -name PROVENANCE \
-  ! -name '*.o' ! -name '*.so' ! -name '*.dll' ! -name '*.dylib' | sort) > "$WORK/local"
-comm -23 "$WORK/derived" "$WORK/local" | sed 's|^\./|FAIL: missing src/practrand/|' >> "$FAILURES"
-comm -13 "$WORK/derived" "$WORK/local" | sed 's|^\./|FAIL: not derived from upstream: src/practrand/|' >> "$FAILURES"
-count=0
-while read -r f; do
-  if [ -f "src/practrand/$f" ] && ! cmp -s "$WORK/tree/$f" "src/practrand/$f"; then
-    echo "FAIL: src/practrand/${f#./} differs from upstream plus patches" >> "$FAILURES"
-  fi
-  count=$((count + 1))
-done < "$WORK/derived"
+compare src/practrand
+count=$(wc -l < "$WORK/derived" | tr -d ' ')
+
+# src/Makevars must compile every vendored translation unit, and nothing else
+# from the vendored tree.
+(cd "$WORK/tree" && find src -name '*.cpp' | sed 's|^|practrand/|; s|\.cpp$|.o|' | sort) > "$WORK/units"
+grep -o 'practrand/src/[^ \\]*\.o' src/Makevars | sort > "$WORK/listed-units"
+comm -23 "$WORK/units" "$WORK/listed-units" |
+  sed 's|^|FAIL: src/Makevars does not build |' >> "$FAILURES"
+comm -13 "$WORK/units" "$WORK/listed-units" |
+  sed 's|^|FAIL: src/Makevars builds a file that is not vendored: |' >> "$FAILURES"
 
 # zurngtest_info() reports the version PractRand compiles in; it must be the
 # version pinned here.
 grep -q "version_str = \"$VERSION\"" src/practrand/src/rand.cpp ||
   echo "FAIL: src/practrand/src/rand.cpp does not report version $VERSION" >> "$FAILURES"
-
-if [ "$CANARY" -eq 1 ]; then
-  if [ -s "$FAILURES" ]; then
-    echo "==> canary OK: verification failed with a patch left out"
-    exit 0
-  fi
-  echo "CANARY FAILED: verification passed with a patch left out" >&2
-  exit 1
-fi
 
 if [ -s "$FAILURES" ]; then
   cat "$FAILURES" >&2

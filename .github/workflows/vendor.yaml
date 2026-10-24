@@ -18,6 +18,6 @@ jobs:
     uses: pedrobtz/r-actions/.github/workflows/vendor.yml@v1
     with:
       vendor-dir: src/practrand
-      verify: tools/vendor/verify
+      verify: tools/vendor/check
       must-update: |
         src/practrand/PROVENANCE

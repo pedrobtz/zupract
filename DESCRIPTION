@@ -4,16 +4,20 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Pedro", "Baltazar", , "pedrobtz@gmail.com", role = c("aut", "cre", "cph")),
     person("Chris", "Doty-Humphrey", role = c("ctb", "cph"),
-           comment = "PractRand library, src/practrand/")
+           comment = "PractRand library, src/practrand/"),
+    person("Hongjun", "Wu", role = "cph",
+           comment = "HC-256 reference implementation, from which src/practrand/src/RNGs/hc256.cpp derives")
   )
 Description: Runs the 'PractRand' statistical test suite for random number
-    generators by Chris Doty-Humphrey from R. Bits from a generator are
+    generators by Chris Doty-Humphrey
+    <https://pracrand.sourceforge.net/> from R. Bits from a generator are
     tested at doubling lengths, and the result reports the length at which
     the generator first fails. Bits can come from R's own generators, from
     an R function, from raw bytes or a connection, or from a C function
     registered by another package, which is the fast path for generator
     packages.
 License: MIT + file LICENSE
+Copyright: see file inst/COPYRIGHTS
 URL: https://pedrobtz.github.io/zurngtest/,
     https://github.com/pedrobtz/zurngtest
 BugReports: https://github.com/pedrobtz/zurngtest/issues

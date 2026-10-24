@@ -13,6 +13,7 @@ Vendored dependency: PractRand, by Chris Doty-Humphrey
                  0002-cran-warnings.patch
                  0003-portability.patch
                  0004-calibration-leak.patch
+                 0005-no-terminate.patch
 
 src/practrand/ is tools/vendor/derive's output: upstream's include/ and src/
 trees without RNGs/other/, and doc/license.txt as LICENSE, with line endings
@@ -66,6 +67,9 @@ behaviour, with one exception:
     access without -Warray-bounds;
   - two variables that are only unset on a path that ends in issue_error()
     are initialised to 0, and mrsf32 writes ~Uint32(0) instead of ~0ull;
+  - in xbg_helpers.cpp, `r ^= bit_read(x, k) & other.bit_read(k, y)` uses
+    && instead of &: bit_read() returns bool and has no side effects, so
+    the result is the same (-Wbitwise-instead-of-logical);
   - the exception: tests_other.cpp read `ored` uninitialised in a
     function that returns (ored >> BITS) == 0; it now starts at 0. That
     is an upstream bug, and the result was undefined before.
@@ -103,3 +107,25 @@ entries twice. Each duplicate overwrote the pointer to the first copy and
 leaked it (2,240 bytes directly, 32,928 with what it owns). The
 constructor now frees the earlier entry before storing the later one, so
 the later entry still wins, as before.
+
+0005-no-terminate.patch keeps issue_error(), which throws since 0001, from
+ending the process where an exception cannot be caught. NearSeq3's
+destructor checked two compile-time constants with issue_error(); a throw
+from a destructor calls std::terminate(), so they are static_asserts now.
+The static calibration_manager in tests_core.cpp is built while the
+library loads, and building it calls TestCalibrationData::init(), which can
+issue_error() on bad calibration data; a throw there would terminate R at
+library(zurngtest). Its constructor now records the error, and
+get_minimum_length() and get_calibration_data() raise it when the tables
+are used, where the package catches it. Neither path is reachable with
+0.96's constants and tables; the patch keeps an update from making them so.
+
+Rule for later patches and updates: issue_error() must never be reachable
+from a destructor or from static initialisation, because the exception
+cannot reach the package's handlers there.
+
+Patches are applied with zero fuzz (patch -F 0), so a hunk that no longer
+matches fails tools/vendor/derive instead of landing elsewhere. 0002 to
+0005 are hand-made: on an update, apply them in order to the new tree, fix
+the hunks that fail, and regenerate each with diff -ruN against the tree
+with the patches before it.

@@ -295,6 +295,8 @@ namespace PractRand {
 		};
 		class TestCalibrationManager {
 			std::map<std::string, std::map< Uint64, TestCalibrationData * > > data;
+			// Modified for the zurngtest R package: set if the tables failed to load.
+			std::string load_error;
 		public:
 			TestCalibrationManager(const PractRand::Tests::RawTestCalibrationData_117 *raw_data_array117, const PractRand::Tests::RawTestCalibrationData_129 *raw_data_array129);
 			~TestCalibrationManager();
