@@ -1853,10 +1853,10 @@ void PractRand::Tests::DistC6::test_blocks(TestBlock *data, int numblocks) {
 		if (!ENABLE_8_BIT_BYPASS || unitsL) while (max2 > i) {
 			int bits;
 			switch (unitsL) {
-				case 0: bits = count_ones8 (data->as8 [i]); break;
-				case 1: bits = count_ones16(data->as16[i]); break;
-				case 2: bits = count_ones32(data->as32[i]); break;
-				case 3: bits = count_ones64(data->as64[i]); break;
+				case 0: bits = count_ones8 (reinterpret_cast<Uint8 *>(data)[i]); break;
+				case 1: bits = count_ones16(reinterpret_cast<Uint16 *>(data)[i]); break;
+				case 2: bits = count_ones32(reinterpret_cast<Uint32 *>(data)[i]); break;
+				case 3: bits = count_ones64(reinterpret_cast<Uint64 *>(data)[i]); break;
 				default: {
 					issue_error();
 					bits=0;//just to make the compiler happy
@@ -1868,7 +1868,7 @@ void PractRand::Tests::DistC6::test_blocks(TestBlock *data, int numblocks) {
 			else counts.increment(last_index);
 		}
 		else while (max2 > i) {
-			last_index = _advance_index(last_index, lookup_table[data->as8[i++]]);
+			last_index = _advance_index(last_index, lookup_table[reinterpret_cast<Uint8 *>(data)[i++]]);
 			if (warmup) warmup--;
 			else counts.increment(last_index);
 		}
@@ -1877,62 +1877,62 @@ void PractRand::Tests::DistC6::test_blocks(TestBlock *data, int numblocks) {
 	switch (unitsL) {
 		case 0: {//8bit
 			if (ENABLE_8_BIT_BYPASS) for (; i < max; ) {
-				index = _advance_index(index, lookup_table[data->as8 [i++]]);
+				index = _advance_index(index, lookup_table[reinterpret_cast<Uint8 *>(data)[i++]]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[data->as8 [i++]]);
+				index = _advance_index(index, lookup_table[reinterpret_cast<Uint8 *>(data)[i++]]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[data->as8 [i++]]);
+				index = _advance_index(index, lookup_table[reinterpret_cast<Uint8 *>(data)[i++]]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[data->as8 [i++]]);
+				index = _advance_index(index, lookup_table[reinterpret_cast<Uint8 *>(data)[i++]]);
 				counts.increment(index);
 			}
 			else for (; i < max; ) {
-				index = _advance_index(index, lookup_table[count_ones8 (data->as8 [i++])]);
+				index = _advance_index(index, lookup_table[count_ones8 (reinterpret_cast<Uint8 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones8 (data->as8 [i++])]);
+				index = _advance_index(index, lookup_table[count_ones8 (reinterpret_cast<Uint8 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones8 (data->as8 [i++])]);
+				index = _advance_index(index, lookup_table[count_ones8 (reinterpret_cast<Uint8 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones8 (data->as8 [i++])]);
+				index = _advance_index(index, lookup_table[count_ones8 (reinterpret_cast<Uint8 *>(data)[i++])]);
 				counts.increment(index);
 			}
 		}
 		break;
 		case 1: {//16bit
 			for (; i < max; ) {
-				index = _advance_index(index, lookup_table[count_ones16(data->as16[i++])]);
+				index = _advance_index(index, lookup_table[count_ones16(reinterpret_cast<Uint16 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones16(data->as16[i++])]);
+				index = _advance_index(index, lookup_table[count_ones16(reinterpret_cast<Uint16 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones16(data->as16[i++])]);
+				index = _advance_index(index, lookup_table[count_ones16(reinterpret_cast<Uint16 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones16(data->as16[i++])]);
+				index = _advance_index(index, lookup_table[count_ones16(reinterpret_cast<Uint16 *>(data)[i++])]);
 				counts.increment(index);
 			}
 		}
 		break;
 		case 2: {//32bit
 			for (; i < max; ) {
-				index = _advance_index(index, lookup_table[count_ones32(data->as32[i++])]);
+				index = _advance_index(index, lookup_table[count_ones32(reinterpret_cast<Uint32 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones32(data->as32[i++])]);
+				index = _advance_index(index, lookup_table[count_ones32(reinterpret_cast<Uint32 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones32(data->as32[i++])]);
+				index = _advance_index(index, lookup_table[count_ones32(reinterpret_cast<Uint32 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones32(data->as32[i++])]);
+				index = _advance_index(index, lookup_table[count_ones32(reinterpret_cast<Uint32 *>(data)[i++])]);
 				counts.increment(index);
 			}
 		}
 		break;
 		case 3: {//64bit
 			for (; i < max; ) {
-				index = _advance_index(index, lookup_table[count_ones64(data->as64[i++])]);
+				index = _advance_index(index, lookup_table[count_ones64(reinterpret_cast<Uint64 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones64(data->as64[i++])]);
+				index = _advance_index(index, lookup_table[count_ones64(reinterpret_cast<Uint64 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones64(data->as64[i++])]);
+				index = _advance_index(index, lookup_table[count_ones64(reinterpret_cast<Uint64 *>(data)[i++])]);
 				counts.increment(index);
-				index = _advance_index(index, lookup_table[count_ones64(data->as64[i++])]);
+				index = _advance_index(index, lookup_table[count_ones64(reinterpret_cast<Uint64 *>(data)[i++])]);
 				counts.increment(index);
 			}
 		}
@@ -2345,10 +2345,10 @@ void PractRand::Tests::BCFN::test_blocks(TestBlock *data, int numblocks) {
 		numblocks -= 1;
 	}
 	if (mode == 2) while (warmup[4]) {//alternating, mode == 2
-#define GET_BITS8(pos)  (count_ones8 (data[0].as8 [i+(pos)]) - 4)
-#define GET_BITS16(pos) (count_ones16(data[0].as16[i+(pos)]) - 8)
-#define GET_BITS32(pos) (count_ones32(data[0].as32[i+(pos)]) - 16)
-#define GET_BITS64(pos) (count_ones64(data[0].as64[i+(pos)]) - 32)
+#define GET_BITS8(pos)  (count_ones8 (reinterpret_cast<Uint8 *>(data)[i+(pos)]) - 4)
+#define GET_BITS16(pos) (count_ones16(reinterpret_cast<Uint16 *>(data)[i+(pos)]) - 8)
+#define GET_BITS32(pos) (count_ones32(reinterpret_cast<Uint32 *>(data)[i+(pos)]) - 16)
+#define GET_BITS64(pos) (count_ones64(reinterpret_cast<Uint64 *>(data)[i+(pos)]) - 32)
 #define HANDLE_BITS(level,var,x) if (true){tmp=(var-(x&1))>>31;cur[level]=((cur[level]<<1)-tmp)&mask[level];if (warmup[level]) warmup[level]--; else counts[level].increment(cur[level]);}
 		switch (unitsL2) {
 		case 0: {
@@ -2405,10 +2405,10 @@ void PractRand::Tests::BCFN::test_blocks(TestBlock *data, int numblocks) {
 		if (!numblocks) return;
 	}
 	else if (mode==1) while (warmup[4]) {//unbalanced, mode == 1
-#define GET_BITS8(pos)  (count_ones8 (data[0].as8 [i+(pos)]) - 4)
-#define GET_BITS16(pos) (count_ones16(data[0].as16[i+(pos)]) - 8)
-#define GET_BITS32(pos) (count_ones32(data[0].as32[i+(pos)]) - 16)
-#define GET_BITS64(pos) (count_ones64(data[0].as64[i+(pos)]) - 32)
+#define GET_BITS8(pos)  (count_ones8 (reinterpret_cast<Uint8 *>(data)[i+(pos)]) - 4)
+#define GET_BITS16(pos) (count_ones16(reinterpret_cast<Uint16 *>(data)[i+(pos)]) - 8)
+#define GET_BITS32(pos) (count_ones32(reinterpret_cast<Uint32 *>(data)[i+(pos)]) - 16)
+#define GET_BITS64(pos) (count_ones64(reinterpret_cast<Uint64 *>(data)[i+(pos)]) - 32)
 #define HANDLE_BITS(level,var) if (true){tmp=var>>31;cur[level]=((cur[level]<<1)-tmp)&mask[level];if (warmup[level]) warmup[level]--; else counts[level].increment(cur[level]);}
 		switch (unitsL2) {
 			case 0: {
@@ -2465,10 +2465,10 @@ void PractRand::Tests::BCFN::test_blocks(TestBlock *data, int numblocks) {
 		if (!numblocks) return;
 	}
 	else if (mode == 0) while (warmup[4]) {//balanced, mode == 0
-#define GET_BITS8(pos)  (count_ones8 (data[0].as8 [i+(pos)]) - 4)
-#define GET_BITS16(pos) (count_ones16(data[0].as16[i+(pos)]) - 8)
-#define GET_BITS32(pos) (count_ones32(data[0].as32[i+(pos)]) - 16)
-#define GET_BITS64(pos) (count_ones64(data[0].as64[i+(pos)]) - 32)
+#define GET_BITS8(pos)  (count_ones8 (reinterpret_cast<Uint8 *>(data)[i+(pos)]) - 4)
+#define GET_BITS16(pos) (count_ones16(reinterpret_cast<Uint16 *>(data)[i+(pos)]) - 8)
+#define GET_BITS32(pos) (count_ones32(reinterpret_cast<Uint32 *>(data)[i+(pos)]) - 16)
+#define GET_BITS64(pos) (count_ones64(reinterpret_cast<Uint64 *>(data)[i+(pos)]) - 32)
 #define HANDLE_BITS(level,var) if (var){tmp=var>>31;cur[level]=((cur[level]<<1)-tmp)&mask[level];if (warmup[level]) warmup[level]--; else counts[level].increment(cur[level]);}
 		switch (unitsL2) {
 			case 0: {
@@ -3076,7 +3076,7 @@ PractRand::Tests::FPF::FPF(int stride_bits_L2_ , int sig_bits_ , int exp_bits_ )
 	if (sig_bits > MAX_SIG_BITS) issue_error();
 	if (exp_bits > 6) issue_error();
 	for (int i = 0; i <= 32; i++) {
-		Uint32 x = i, y = 1 << i;
+		Uint32 x = i, y = i < 32 ? Uint32(1) << i : 0;// Modified for the zurngtest R package: 1 << 32 is undefined
 		if (x >= 32) { x = 32; y = 0; }
 		if (count_low_zeroes32(y) != x) issue_error("count_low_zeroes32 behaving incorrectly");
 	}
@@ -3226,7 +3226,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 			long stride32 = 1 << (stride_bits_L2 - 5);
 			long max = numblocks * (TestBlock::SIZE / 4);
 			for (long i = 0; i < max; i += stride32) {
-				Uint32 cur = data->as32[i];
+				Uint32 cur = reinterpret_cast<Uint32 *>(data)[i];
 				unsigned long e = count_low_zeroes32(cur);
 				if (e < max_exp) {
 					unsigned long sig = (cur >> (e+1)) & max_sig;
@@ -3250,12 +3250,12 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 				start = 0;
 			}
 			else {
-				cur = reverse_bits32(data->as32[0]);
+				cur = reverse_bits32(reinterpret_cast<Uint32 *>(data)[0]);
 				start = 1;
 			}
 			unsigned long word_parts = 32 >> stride_bits_L2;
 			for (long i = start; i < max32; i += 1) {
-				Uint32 word = data->as32[i];
+				Uint32 word = reinterpret_cast<Uint32 *>(data)[i];
 				for (unsigned long sub_word = 0; sub_word < word_parts; sub_word++) {
 					for (unsigned long j = 0; j < stride_bits; j++) {
 						cur = (cur << 1) | (word & 1);
@@ -3282,7 +3282,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 			long max = numblocks * (TestBlock::SIZE / 4) - 1;
 			const unsigned long inv_sig_bits = 32 - sig_bits;
 			for (long i = blocks_tested ? -1 : 0; i < max; i += stride32) {
-				Uint32 cur = data->as32[i];
+				Uint32 cur = reinterpret_cast<Uint32 *>(data)[i];
 				unsigned long e = count_low_zeroes32(cur);
 				if (e < inv_sig_bits) {
 					unsigned long sig = (cur >> (e+1)) & max_sig;
@@ -3290,8 +3290,8 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 					counts.increment(index);
 				}
 				else {
-					Uint64 cur2 = cur | (Uint64(data->as32[i+1]) << 32);
-					if (e == 32) e += count_low_zeroes32(data->as32[i+1]);
+					Uint64 cur2 = cur | (Uint64(reinterpret_cast<Uint32 *>(data)[i+1]) << 32);
+					if (e == 32) e += count_low_zeroes32(reinterpret_cast<Uint32 *>(data)[i+1]);
 					unsigned long sig;
 					if (e < max_exp) {
 						sig = Uint32(cur2 >> (e+1)) & max_sig;
@@ -3314,13 +3314,13 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 				start = -1;
 			}
 			else {
-				cur = data->as32[0];//
+				cur = reinterpret_cast<Uint32 *>(data)[0];//
 				start = 1;
 			}
 			const unsigned long inv_sig_bits = 32 - sig_bits;
 			if (stride_bits == 16) {enum {STRIDE_BITS=16};
 				for (long i = start; i < max32; i += 1) {
-					Uint32 word = data->as32[i];
+					Uint32 word = reinterpret_cast<Uint32 *>(data)[i];
 
 					unsigned long e, sig;
 					cur >>= STRIDE_BITS;
@@ -3332,7 +3332,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 						counts.increment((e << sig_bits) + sig);
 					}
 					else {
-						Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(data->as32[i+1]) << (64 - STRIDE_BITS));
+						Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(reinterpret_cast<Uint32 *>(data)[i+1]) << (64 - STRIDE_BITS));
 						if (e == 32) e += count_low_zeroes32(Uint32(cur2 >> 32));
 						if (e < max_exp) {
 							sig = Uint32(cur2 >> (e+1)) & max_sig;
@@ -3353,7 +3353,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 					}
 					else {
 						word >>= stride_bits;//
-						Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(data->as32[i+1]) << (64 - 2*STRIDE_BITS));
+						Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(reinterpret_cast<Uint32 *>(data)[i+1]) << (64 - 2*STRIDE_BITS));
 						if (e == 32) e += count_low_zeroes32(Uint32(cur2 >> 32));
 						if (e < max_exp) {
 							sig = Uint32(cur2 >> (e+1)) & max_sig;
@@ -3368,7 +3368,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 			}
 			else if (stride_bits == 8) {enum {STRIDE_BITS=8};
 				for (long i = start; i < max32; i += 1) {
-					Uint32 word = data->as32[i];
+					Uint32 word = reinterpret_cast<Uint32 *>(data)[i];
 					for (unsigned long sub_word = 0; sub_word < 32/STRIDE_BITS; sub_word++) {
 						cur >>= STRIDE_BITS;
 						cur |= word << (32 - STRIDE_BITS);
@@ -3379,7 +3379,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 							sig = (cur >> (e+1)) & max_sig;
 						}
 						else {
-							Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(data->as32[i+1]) << (64 - (sub_word+1) * STRIDE_BITS));//
+							Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(reinterpret_cast<Uint32 *>(data)[i+1]) << (64 - (sub_word+1) * STRIDE_BITS));//
 							if (e == 32) e += count_low_zeroes32(Uint32(cur2 >> 32));
 							if (e < max_exp) {
 								sig = Uint32(cur2 >> (e+1)) & max_sig;
@@ -3396,7 +3396,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 			}
 			else if (stride_bits == 4) {enum {STRIDE_BITS=4};
 				for (long i = start; i < max32; i += 1) {
-					Uint32 word = data->as32[i];
+					Uint32 word = reinterpret_cast<Uint32 *>(data)[i];
 					for (unsigned long sub_word = 0; sub_word < 32/STRIDE_BITS; sub_word++) {
 						cur >>= STRIDE_BITS;
 						cur |= word << (32 - STRIDE_BITS);
@@ -3407,7 +3407,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 							sig = (cur >> (e+1)) & max_sig;
 						}
 						else {
-							Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(data->as32[i+1]) << (64 - (sub_word+1) * STRIDE_BITS));//
+							Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(reinterpret_cast<Uint32 *>(data)[i+1]) << (64 - (sub_word+1) * STRIDE_BITS));//
 							if (e == 32) e += count_low_zeroes32(Uint32(cur2 >> 32));
 							if (e < max_exp) {
 								sig = Uint32(cur2 >> (e+1)) & max_sig;
@@ -3425,7 +3425,7 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 			else {
 				unsigned long word_parts = 32 >> stride_bits_L2;
 				for (long i = start; i < max32; i += 1) {
-					Uint32 word = data->as32[i];
+					Uint32 word = reinterpret_cast<Uint32 *>(data)[i];
 					for (unsigned long sub_word = 0; sub_word < word_parts; sub_word++) {
 						cur >>= stride_bits;
 						cur |= word << (32 - stride_bits);
@@ -3436,8 +3436,8 @@ void PractRand::Tests::FPF::test_blocks(TestBlock *data, int numblocks) {
 							sig = (cur >> (e+1)) & max_sig;
 						}
 						else {
-							//Uint64 cur2 = cur | (Uint64(reverse_bits32(data->as32[i+1])) << 32);
-							Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(data->as32[i+1]) << (64 - (sub_word+1) * stride_bits));//
+							//Uint64 cur2 = cur | (Uint64(reverse_bits32(reinterpret_cast<Uint32 *>(data)[i+1])) << 32);
+							Uint64 cur2 = cur | (Uint64(word) << 32) | (Uint64(reinterpret_cast<Uint32 *>(data)[i+1]) << (64 - (sub_word+1) * stride_bits));//
 							if (e == 32) e += count_low_zeroes32(Uint32(cur2 >> 32));
 							if (e < max_exp) {
 								sig = Uint32(cur2 >> (e+1)) & max_sig;
@@ -3663,8 +3663,8 @@ void PractRand::Tests::BRank_old::test_blocks(TestBlock *data, int numblocks) {
 			blocks_needed -= blocks_in_progress;
 			Uint32 offset = (blocks_in_progress * TestBlock::SIZE) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3);
 			if (numblocks >= blocks_needed) {//whole matrix
-				//in_progress->raw_import(offset, &data[0].as64[0], (bytes - blocks_in_progress * TestBlock::SIZE) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
-				in_progress->_import_words(offset, &data[0].as64[0], (bytes - blocks_in_progress * TestBlock::SIZE) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
+				//in_progress->raw_import(offset, &reinterpret_cast<Uint64 *>(data)[0], (bytes - blocks_in_progress * TestBlock::SIZE) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
+				in_progress->_import_words(offset, &reinterpret_cast<Uint64 *>(data)[0], (bytes - blocks_in_progress * TestBlock::SIZE) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
 				finish_matrix();//this will reset blocks_in_progress
 				data += blocks_needed;
 				saved_time -= s.time_per;
@@ -3672,8 +3672,8 @@ void PractRand::Tests::BRank_old::test_blocks(TestBlock *data, int numblocks) {
 				numblocks -= blocks_needed;
 			}
 			else {//partial matrix
-				//in_progress->raw_import(offset, &data[0].as64[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
-				in_progress->_import_words(offset, &data[0].as64[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
+				//in_progress->raw_import(offset, &reinterpret_cast<Uint64 *>(data)[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
+				in_progress->_import_words(offset, &reinterpret_cast<Uint64 *>(data)[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
 				blocks_in_progress += numblocks;
 				//data += numblocks; //we're now done here, so need to update the local variable
 				saved_time += rate * numblocks;
@@ -3869,8 +3869,8 @@ void PractRand::Tests::BRank::test_blocks(TestBlock *data, int numblocks) {
 			Uint64 offset = (blocks_in_progress << TestBlock::SIZE_L2) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3);
 			if (numblocks < blocks_needed) {
 				//PractRand::Internals::no_printf("\n                      using %lld KB\n", numblocks);
-				//in_progress->raw_import(offset, &data[0].as64[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
-				in_progress->_import_words(offset, &data[0].as64[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
+				//in_progress->raw_import(offset, &reinterpret_cast<Uint64 *>(data)[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
+				in_progress->_import_words(offset, &reinterpret_cast<Uint64 *>(data)[0], numblocks << (TestBlock::SIZE_L2 - (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3)));
 				blocks_in_progress += numblocks;
 				time_till_next_matrix -= rate * numblocks;
 				//data += numblocks;
@@ -3879,8 +3879,8 @@ void PractRand::Tests::BRank::test_blocks(TestBlock *data, int numblocks) {
 			else {
 				//PractRand::Internals::no_printf("\n                      using %lld KB\n", blocks_needed);
 				//PractRand::Internals::no_printf("\n                      finishing...\n");
-				//in_progress->raw_import(offset, &data[0].as64[0], (bytes_needed - (blocks_in_progress << TestBlock::SIZE_L2)) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
-				in_progress->_import_words(offset, &data[0].as64[0], (bytes_needed - (blocks_in_progress << TestBlock::SIZE_L2)) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
+				//in_progress->raw_import(offset, &reinterpret_cast<Uint64 *>(data)[0], (bytes_needed - (blocks_in_progress << TestBlock::SIZE_L2)) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
+				in_progress->_import_words(offset, &reinterpret_cast<Uint64 *>(data)[0], (bytes_needed - (blocks_in_progress << TestBlock::SIZE_L2)) >> (Internals::XBG_helpers::BitMatrix::WORD_BITS_L2 - 3));
 				finish_matrix();
 				time_till_next_matrix -= rate * blocks_needed;
 				numblocks -= blocks_needed;
@@ -4090,16 +4090,16 @@ void PractRand::Tests::mod3_simple::test_blocks(TestBlock *data, int numblocks) 
 	if (WORD_BITS == 8) {
 		if (!blocks_tested) {
 			for (unsigned long i = 0; i < EXP - 1; i++) {
-				update_index(data[0].as8[i]);
+				update_index(reinterpret_cast<Uint8 *>(data)[i]);
 			}
 			for (unsigned long i = EXP - 1; i < max; i++) {
-				update_index(data[0].as8[i]);
+				update_index(reinterpret_cast<Uint8 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
 		else {
 			for (unsigned long i = 0; i < max; i++) {
-				update_index(data[0].as8[i]);
+				update_index(reinterpret_cast<Uint8 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
@@ -4107,16 +4107,16 @@ void PractRand::Tests::mod3_simple::test_blocks(TestBlock *data, int numblocks) 
 	else if (WORD_BITS == 16) {
 		if (!blocks_tested) {
 			for (unsigned long i = 0; i < EXP - 1; i++) {
-				update_index(data[0].as16[i]);
+				update_index(reinterpret_cast<Uint16 *>(data)[i]);
 			}
 			for (unsigned long i = EXP - 1; i < max; i++) {
-				update_index(data[0].as16[i]);
+				update_index(reinterpret_cast<Uint16 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
 		else {
 			for (unsigned long i = 0; i < max; i++) {
-				update_index(data[0].as16[i]);
+				update_index(reinterpret_cast<Uint16 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
@@ -4124,16 +4124,16 @@ void PractRand::Tests::mod3_simple::test_blocks(TestBlock *data, int numblocks) 
 	else if (WORD_BITS == 32) {
 		if (!blocks_tested) {
 			for (unsigned long i = 0; i < EXP - 1; i++) {
-				update_index(data[0].as32[i]);
+				update_index(reinterpret_cast<Uint32 *>(data)[i]);
 			}
 			for (unsigned long i = EXP - 1; i < max; i++) {
-				update_index(data[0].as32[i]);
+				update_index(reinterpret_cast<Uint32 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
 		else {
 			for (unsigned long i = 0; i < max; i++) {
-				update_index(data[0].as32[i]);
+				update_index(reinterpret_cast<Uint32 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
@@ -4141,16 +4141,16 @@ void PractRand::Tests::mod3_simple::test_blocks(TestBlock *data, int numblocks) 
 	else if (WORD_BITS == 64) {
 		if (!blocks_tested) {
 			for (unsigned long i = 0; i < EXP - 1; i++) {
-				update_index(data[0].as64[i]);
+				update_index(reinterpret_cast<Uint64 *>(data)[i]);
 			}
 			for (unsigned long i = EXP - 1; i < max; i++) {
-				update_index(data[0].as64[i]);
+				update_index(reinterpret_cast<Uint64 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
 		else {
 			for (unsigned long i = 0; i < max; i++) {
-				update_index(data[0].as64[i]);
+				update_index(reinterpret_cast<Uint64 *>(data)[i]);
 				counts.increment(index);
 			}
 		}
@@ -4336,23 +4336,23 @@ void PractRand::Tests::mod3n::test_blocks(TestBlock *data, int numblocks) {
 		int max = blocks_on * TestBlock::SIZE;
 		unsigned long i;
 		for (i = 0; levels[1].warmup && i < max; i += 4) {
-			handle_level(0, u8_mod3(data->as8[i + 0]));
-			handle_level(0, u8_mod3(data->as8[i + 1]));
-			handle_level(0, u8_mod3(data->as8[i + 2]));
-			handle_level(0, u8_mod3(data->as8[i + 3]));
+			handle_level(0, u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 0]));
+			handle_level(0, u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 1]));
+			handle_level(0, u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 2]));
+			handle_level(0, u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 3]));
 		}
 		for (; i < max; i += 4) {
 			Uint8 remainder;
 
 			//level 0, even
-			remainder = u8_mod3(data->as8[i + 0]);
+			remainder = u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 0]);
 			levels[0].index = update_index(levels[0].index, remainder);
 			levels[0].counts.increment(levels[0].index);
 			levels[0].remainder = remainder;
 			//levels[0].odd = true;
 
 			//level 0, odd
-			remainder = u8_mod3(data->as8[i + 1]);
+			remainder = u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 1]);
 			levels[0].index = update_index(levels[0].index, remainder);
 			levels[0].counts.increment(levels[0].index);
 			//handle_level(1, combine_mod3s(levels[0].remainder, remainder));
@@ -4366,14 +4366,14 @@ void PractRand::Tests::mod3n::test_blocks(TestBlock *data, int numblocks) {
 			//levels[1].odd = true;
 
 			//level 0, even
-			remainder = u8_mod3(data->as8[i + 2]);
+			remainder = u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 2]);
 			levels[0].index = update_index(levels[0].index, remainder);
 			levels[0].counts.increment(levels[0].index);
 			levels[0].remainder = remainder;
 			//levels[0].odd = true;
 
 			//level 0, odd
-			remainder = u8_mod3(data->as8[i + 3]);
+			remainder = u8_mod3(reinterpret_cast<Uint8 *>(data)[i + 3]);
 			levels[0].index = update_index(levels[0].index, remainder);
 			levels[0].counts.increment(levels[0].index);
 			//handle_level(1, combine_mod3s(levels[0].remainder, remainder));
@@ -4622,8 +4622,8 @@ void PractRand::Tests::BirthdaySystematic2::test_blocks(TestBlock *data, int num
 #endif
 		if (!total_flushes) {//still in warmup period
 			for (long i = 0; i < 2 * VALUES_PER_BLOCK; i += 2) {
-				Uint64 low = data[0].as64[i + LOW];
-				Uint64 high = data[0].as64[i + HIGH]; (void)high;
+				Uint64 low = reinterpret_cast<Uint64 *>(data)[i + LOW];
+				Uint64 high = reinterpret_cast<Uint64 *>(data)[i + HIGH]; (void)high;
 				buffer[num_buffered++] = low;
 			}
 			if (!(num_buffered & (num_buffered - 1))) {//power of 2
@@ -4633,8 +4633,8 @@ void PractRand::Tests::BirthdaySystematic2::test_blocks(TestBlock *data, int num
 		}
 		else {
 			for (long i = 0; i < 2 * VALUES_PER_BLOCK; i += 2) {
-				Uint64 low = data[0].as64[i + LOW];
-				Uint64 high = data[0].as64[i + HIGH];
+				Uint64 low = reinterpret_cast<Uint64 *>(data)[i + LOW];
+				Uint64 high = reinterpret_cast<Uint64 *>(data)[i + HIGH];
 				/*buffer[num_buffered] = low;
 				num_buffered += (high & filter_check_mask) ? 0 : 1;
 				if (num_buffered == BUFFER_SIZE) flush_buffer();//*/
@@ -4724,7 +4724,7 @@ void PractRand::Tests::Transforms::FirstNofM::init( RNGs::vRNG *known_good ) {
 }
 void PractRand::Tests::Transforms::FirstNofM::test_blocks(TestBlock *data, int numblocks) {
 	int max = numblocks * TestBlock::SIZE;
-	Uint8 *inptr = &data->as8[0];
+	Uint8 *inptr = &reinterpret_cast<Uint8 *>(data)[0];
 
 	int inv_input_phase = bytes_stride - input_phase;
 	if (!input_phase) inv_input_phase = 0;
@@ -4812,6 +4812,9 @@ void PractRand::Tests::Transforms::lowbits::init( RNGs::vRNG *known_good ) {
 	}
 }
 void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int numblocks) {
+	// Modified for the zurngtest R package: the index below runs across all
+	// numblocks blocks, so the reads go through a pointer to the first one
+	// rather than past the end of data->asN[].
 	enum {MAX_BLOCKS_AT_ONCE = 16384};
 	while (numblocks > MAX_BLOCKS_AT_ONCE) {
 		test_blocks(data, MAX_BLOCKS_AT_ONCE);
@@ -4851,9 +4854,9 @@ void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int num
 			};
 			long i = 0;
 			while (i < max) {
-				Uint32 word = table[data->as8[i++]];
+				Uint32 word = table[reinterpret_cast<const Uint8 *>(data)[i++]];
 				for (long j = lowbits; j < 32; j+=lowbits) {
-					word |= Uint32(table[data->as8[i++]]) << j;
+					word |= Uint32(table[reinterpret_cast<const Uint8 *>(data)[i++]]) << j;
 				}
 				*dest_ptr = word;
 				dest_ptr++;
@@ -4876,9 +4879,9 @@ void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int num
 			const Uint8 *table = lowbitsL ? table1 : table0;
 			long i = 0;
 			while (i < max) {
-				Uint32 word = table[data->as8[i++]];
+				Uint32 word = table[reinterpret_cast<const Uint8 *>(data)[i++]];
 				for (long j = lowbits; j < 32; j+=lowbits) {
-					word |= Uint32(table[data->as8[i++]]) << j;
+					word |= Uint32(table[reinterpret_cast<const Uint8 *>(data)[i++]]) << j;
 				}
 				*dest_ptr = word;
 				dest_ptr++;
@@ -4889,9 +4892,9 @@ void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int num
 			Uint32 mask = (Uint32(1) << lowbits) - 1;
 			int i = 0;
 			while (i < max) {
-				Uint32 word = data->as8[i++] & mask;
+				Uint32 word = reinterpret_cast<const Uint8 *>(data)[i++] & mask;
 				for (int j = lowbits; j < 32; j+=lowbits) {
-					word |= Uint32(data->as8[i++] & mask) << j;
+					word |= Uint32(reinterpret_cast<const Uint8 *>(data)[i++] & mask) << j;
 				}
 				*dest_ptr = word;
 				dest_ptr++;
@@ -4902,9 +4905,9 @@ void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int num
 			Uint32 mask = (Uint32(1) << lowbits) - 1;
 			int i = 0;
 			while (i < max) {
-				Uint32 word = data->as16[i++] & mask;
+				Uint32 word = reinterpret_cast<const Uint16 *>(data)[i++] & mask;
 				for (int j = lowbits; j < 32; j+=lowbits) {
-					word |= Uint32(data->as16[i++] & mask) << j;
+					word |= Uint32(reinterpret_cast<const Uint16 *>(data)[i++] & mask) << j;
 				}
 				*dest_ptr = word;
 				dest_ptr++;
@@ -4915,9 +4918,9 @@ void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int num
 			Uint32 mask = (Uint32(1) << lowbits) - 1;
 			int i = 0;
 			while (i < max) {
-				Uint32 word = data->as32[i++] & mask;
+				Uint32 word = reinterpret_cast<const Uint32 *>(data)[i++] & mask;
 				for (int j = lowbits; j < 32; j+=lowbits) {
-					word |= Uint32(data->as32[i++] & mask) << j;
+					word |= Uint32(reinterpret_cast<const Uint32 *>(data)[i++] & mask) << j;
 				}
 				*dest_ptr = word;
 				dest_ptr++;
@@ -4928,9 +4931,9 @@ void PractRand::Tests::Transforms::lowbits::test_blocks(TestBlock *data, int num
 			Uint32 mask = Uint32((Uint64(1) << lowbits) - 1);
 			int i = 0;
 			while (i < max) {
-				Uint32 word = Uint32(data->as64[i++]) & mask;
+				Uint32 word = Uint32(reinterpret_cast<const Uint64 *>(data)[i++]) & mask;
 				for (int j = lowbits; j < 32; j+=lowbits) {
-					word |= (Uint32(data->as64[i++]) & mask) << j;
+					word |= (Uint32(reinterpret_cast<const Uint64 *>(data)[i++]) & mask) << j;
 				}
 				*dest_ptr = word;
 				dest_ptr++;
@@ -5014,8 +5017,8 @@ void PractRand::Tests::Transforms::classify128to8::test_blocks(TestBlock *data, 
 
 		Uint64 rand = internal_rng.raw64();
 
-		word0 = data->as64[i + 0];
-		word1 = data->as64[i + 1];
+		word0 = reinterpret_cast<Uint64 *>(data)[i + 0];
+		word1 = reinterpret_cast<Uint64 *>(data)[i + 1];
 		count0 = count_ones64(word0 ^ xc0) + count_ones64(word1 ^ xc0);
 		count1 = count_ones64(word0 ^ xc1) + count_ones64(word1 ^ xc1);
 		count2 = count_ones64(word0 ^ xc2) + count_ones64(word1 ^ xc2);
@@ -5037,8 +5040,8 @@ void PractRand::Tests::Transforms::classify128to8::test_blocks(TestBlock *data, 
 		i += 2;
 		dest_ptr++;
 
-		word0 = data->as64[i + 0];
-		word1 = data->as64[i + 1];
+		word0 = reinterpret_cast<Uint64 *>(data)[i + 0];
+		word1 = reinterpret_cast<Uint64 *>(data)[i + 1];
 		count0 = count_ones64(word0 ^ xc0) + count_ones64(word1 ^ xc0);
 		count1 = count_ones64(word0 ^ xc1) + count_ones64(word1 ^ xc1);
 		count2 = count_ones64(word0 ^ xc2) + count_ones64(word1 ^ xc2);
